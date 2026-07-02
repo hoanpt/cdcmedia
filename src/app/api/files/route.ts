@@ -1,0 +1,158 @@
+// src/app/api/files/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/auth";
+import { logActivity } from "@/lib/logger";
+import { isDriveConfigured, uploadToDrive } from "@/lib/gdrive";
+import { writeFile, mkdir } from "fs/promises";
+import { existsSync } from "fs";
+import path from "path";
+// Use built-in crypto — no uuid dep needed
+
+const MAX_SIZE = 500 * 1024 * 1024; // 500 MB
+const UPLOADS_DIR = path.join(process.cwd(), "uploads");
+
+// GET /api/files — public list
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const categoryId = searchParams.get("categoryId");
+  const q = searchParams.get("q");
+  const tag = searchParams.get("tag");
+  const year = searchParams.get("year");
+  const type = searchParams.get("type"); // mime category filter
+  const page = parseInt(searchParams.get("page") ?? "1");
+  const limit = parseInt(searchParams.get("limit") ?? "50");
+  const skip = (page - 1) * limit;
+
+  const where: Record<string, unknown> = { isPublic: true };
+  if (categoryId) where.categoryId = categoryId;
+  if (year) where.year = parseInt(year);
+  if (q) {
+    where.OR = [
+      { title: { contains: q } },
+      { description: { contains: q } },
+    ];
+  }
+  if (tag) {
+    where.tags = { some: { tag: { name: tag } } };
+  }
+  if (type) {
+    // e.g. type=image → mimeType starts with image/
+    where.fileType = { startsWith: type + "/" };
+  }
+
+  const [files, total] = await Promise.all([
+    prisma.mediaFile.findMany({
+      where,
+      include: {
+        category: { select: { id: true, name: true, color: true, icon: true } },
+        uploader: { select: { id: true, username: true, displayName: true } },
+        tags: { include: { tag: { select: { id: true, name: true } } } },
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.mediaFile.count({ where }),
+  ]);
+
+  return NextResponse.json({ files, total, page, limit });
+}
+
+// POST /api/files — upload (auth required, UPLOADER or ADMIN)
+export async function POST(req: NextRequest) {
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Chưa đăng nhập" }, { status: 401 });
+
+  try {
+    const formData = await req.formData();
+    const file = formData.get("file") as File | null;
+    const title = formData.get("title") as string;
+    const description = formData.get("description") as string | null;
+    const categoryId = formData.get("categoryId") as string;
+    const tagsRaw = formData.get("tags") as string | null;
+    const year = formData.get("year") as string | null;
+
+    if (!file || !title || !categoryId) {
+      return NextResponse.json({ error: "Thiếu thông tin bắt buộc" }, { status: 400 });
+    }
+
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json({ error: "File vượt quá 500 MB" }, { status: 413 });
+    }
+
+    const category = await prisma.category.findUnique({ where: { id: categoryId } });
+    if (!category) {
+      return NextResponse.json({ error: "Chuyên mục không tồn tại" }, { status: 400 });
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const ext = path.extname(file.name) || "";
+    const uniqueName = `${crypto.randomUUID()}${ext}`;
+
+    let filepath: string;
+    let driveFileId: string | undefined;
+    let driveWebLink: string | undefined;
+
+    if (await isDriveConfigured()) {
+      const result = await uploadToDrive(buffer, file.name, file.type);
+      filepath = `gdrive://${result.fileId}`;
+      driveFileId = result.fileId;
+      driveWebLink = result.webViewLink;
+    } else {
+      if (!existsSync(UPLOADS_DIR)) await mkdir(UPLOADS_DIR, { recursive: true });
+      await writeFile(path.join(UPLOADS_DIR, uniqueName), buffer);
+      filepath = uniqueName;
+    }
+
+    // Parse tags
+    const tagNames: string[] = tagsRaw
+      ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean)
+      : [];
+
+    const tagConnects = await Promise.all(
+      tagNames.map((name) =>
+        prisma.tag.upsert({
+          where: { name },
+          create: { name },
+          update: {},
+          select: { id: true },
+        })
+      )
+    );
+
+    const mediaFile = await prisma.mediaFile.create({
+      data: {
+        title,
+        description: description || null,
+        filename: file.name,
+        filepath,
+        driveFileId,
+        driveWebLink,
+        fileType: file.type || "application/octet-stream",
+        fileSize: file.size,
+        year: year ? parseInt(year) : new Date().getFullYear(),
+        categoryId,
+        uploaderId: session.userId,
+        tags: { create: tagConnects.map((t) => ({ tagId: t.id })) },
+      },
+      include: {
+        category: { select: { id: true, name: true, color: true, icon: true } },
+        uploader: { select: { id: true, username: true, displayName: true } },
+        tags: { include: { tag: true } },
+      },
+    });
+
+    await logActivity(
+      session.userId,
+      "UPLOAD",
+      `Tải lên: "${title}" (${(file.size / 1024 / 1024).toFixed(2)} MB)`,
+      req.headers.get("x-forwarded-for") ?? undefined
+    );
+
+    return NextResponse.json({ file: mediaFile }, { status: 201 });
+  } catch (err) {
+    console.error("[files/POST]", err);
+    return NextResponse.json({ error: "Lỗi máy chủ khi tải lên" }, { status: 500 });
+  }
+}

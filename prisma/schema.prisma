@@ -1,0 +1,142 @@
+// Prisma schema cho CDCMedia - Ngân hàng Tài liệu Truyền thông CDC Đà Nẵng
+// uploadss project — SQLite (no native enum support → use String)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  username     String        @unique
+  passwordHash String
+  displayName  String?
+  // role: "ADMIN" | "UPLOADER" | "VIEWER"
+  role         String        @default("UPLOADER")
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  files        MediaFile[]
+  logs         ActivityLog[]
+}
+
+model Category {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  slug        String      @unique
+  description String?
+  color       String?     @default("#3B82F6")
+  icon        String?     @default("Folder")
+  sortOrder   Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  files       MediaFile[]
+}
+
+model Tag {
+  id        String         @id @default(uuid())
+  name      String         @unique
+  createdAt DateTime       @default(now())
+  files     MediaFileTag[]
+}
+
+model MediaFile {
+  id            String         @id @default(uuid())
+  title         String
+  description   String?
+  filename      String
+  filepath      String
+  driveFileId   String?
+  driveWebLink  String?
+  fileType      String
+  fileSize      Int
+  downloadCount Int            @default(0)
+  isPublic      Boolean        @default(true)
+  year          Int?
+  categoryId    String
+  category      Category       @relation(fields: [categoryId], references: [id])
+  uploaderId    String
+  uploader      User           @relation(fields: [uploaderId], references: [id])
+  tags          MediaFileTag[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model MediaFileTag {
+  fileId String
+  tagId  String
+  file   MediaFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  tag    Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([fileId, tagId])
+}
+
+model AppSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  // action: "UPLOAD"|"DELETE"|"UPDATE"|"LOGIN"|"LOGOUT"|"DOWNLOAD"|"UPDATE_SETTINGS"|"CREATE_CATEGORY"|"DELETE_CATEGORY"|"CREATE_USER"|"DELETE_USER"
+  action    String
+  details   String?
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
+
+// Banner ngang (hiện dưới Navbar hoặc giữa trang)
+// position: "TOP" | "MIDDLE" | "BOTTOM"
+model Banner {
+  id        String   @id @default(uuid())
+  title     String
+  imageUrl  String
+  linkUrl   String?
+  position  String   @default("TOP")
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  startAt   DateTime?
+  endAt     DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Sidebar dọc phải
+// position: "RIGHT" | "LEFT"
+model SidebarAd {
+  id        String   @id @default(uuid())
+  title     String
+  imageUrl  String
+  linkUrl   String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  startAt   DateTime?
+  endAt     DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Popup khi vào trang
+model Popup {
+  id          String   @id @default(uuid())
+  title       String
+  imageUrl    String?
+  content     String?
+  linkUrl     String?
+  linkLabel   String?
+  isActive    Boolean  @default(true)
+  showOnce    Boolean  @default(true)
+  delayMs     Int      @default(1000)
+  startAt     DateTime?
+  endAt       DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
