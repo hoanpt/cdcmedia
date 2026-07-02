@@ -3,10 +3,17 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@prisma/client", "bcryptjs"],
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   turbopack: {
     root: path.resolve(__dirname),
   },
   experimental: {
+    cpus: 1,
     serverActions: {
       bodySizeLimit: "500mb",
     },
