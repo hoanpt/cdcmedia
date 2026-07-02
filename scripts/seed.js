@@ -7,16 +7,20 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Seeding CDCMedia database...");
 
-  // Create admin user
+  // Create or update admin user
+  const passwordHash = await bcrypt.hash("admin123", 12);
   const existing = await prisma.user.findUnique({ where: { username: "admin" } });
   if (!existing) {
-    const passwordHash = await bcrypt.hash("admin123", 12);
     await prisma.user.create({
       data: { username: "admin", passwordHash, displayName: "Quản trị viên", role: "ADMIN" },
     });
     console.log("✅ Admin account created — username: admin / password: admin123");
   } else {
-    console.log("ℹ️  Admin account already exists");
+    await prisma.user.update({
+      where: { username: "admin" },
+      data: { passwordHash },
+    });
+    console.log("✅ Admin account password reset to admin123");
   }
 
   // Default categories for CDC media bank
