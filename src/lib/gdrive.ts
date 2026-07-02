@@ -17,7 +17,7 @@ export async function getDriveSettings(): Promise<DriveSettings | null> {
     },
   });
 
-  const map = Object.fromEntries(settings.map((s) => [s.key, s.value]));
+  const map = Object.fromEntries(settings.map((s: any) => [s.key, s.value]));
 
   if (!map.gdrive_client_id || !map.gdrive_client_secret || !map.gdrive_refresh_token) {
     return null;
@@ -42,7 +42,7 @@ export async function getDriveClient() {
 
   const oauth2 = new google.auth.OAuth2(settings.clientId, settings.clientSecret);
   oauth2.setCredentials({ refresh_token: settings.refreshToken });
-  return { drive: google.drive({ version: "v3", auth: oauth2 }), settings };
+  return { drive: google.drive({ version: "v3", auth: oauth2 } as any) as any, settings };
 }
 
 export async function getDriveAccessToken(): Promise<string> {

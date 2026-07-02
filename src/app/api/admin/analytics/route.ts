@@ -125,10 +125,10 @@ export async function GET() {
     .sort((a, b) => b.count - a.count);
 
   // ── Thống kê chuyên mục ──────────────────────────────────────────────────
-  const catStats = categoryStats.map(cat => {
-    const totalDl = cat.files.reduce((s, f) => s + f.downloadCount, 0);
-    const totalSz = cat.files.reduce((s, f) => s + f.fileSize, 0);
-    const publicCount = cat.files.filter(f => f.isPublic).length;
+  const catStats = categoryStats.map((cat: any) => {
+    const totalDl = cat.files.reduce((s: number, f: any) => s + f.downloadCount, 0);
+    const totalSz = cat.files.reduce((s: number, f: any) => s + f.fileSize, 0);
+    const publicCount = cat.files.filter((f: any) => f.isPublic).length;
     return {
       id: cat.id,
       name: cat.name,
@@ -140,21 +140,21 @@ export async function GET() {
       sizeMB: Math.round(totalSz / 1024 / 1024 * 10) / 10,
       avgDownloads: cat._count.files > 0 ? Math.round(totalDl / cat._count.files) : 0,
     };
-  }).sort((a, b) => b.totalDownloads - a.totalDownloads);
+  }).sort((a: any, b: any) => b.totalDownloads - a.totalDownloads);
 
   // ── Top uploader ─────────────────────────────────────────────────────────
-  const uploaderStats = topUploaders.map(u => ({
+  const uploaderStats = topUploaders.map((u: any) => ({
     id: u.id,
     name: u.displayName ?? u.username,
     role: u.role,
     fileCount: u._count.files,
-    totalDownloads: u.files.reduce((s, f) => s + f.downloadCount, 0),
-  })).sort((a, b) => b.fileCount - a.fileCount).slice(0, 10);
+    totalDownloads: u.files.reduce((s: number, f: any) => s + f.downloadCount, 0),
+  })).sort((a: any, b: any) => b.fileCount - a.fileCount).slice(0, 10);
 
   // ── Hiệu quả (effectiveness score) ─────────────────────────────────────
   // Score = downloads / max_downloads * 100, để so sánh tương đối
   const maxDl = topByDownload[0]?.downloadCount ?? 1;
-  const topFilesWithScore = topByDownload.map(f => ({
+  const topFilesWithScore = topByDownload.map((f: any) => ({
     ...f,
     score: Math.round((f.downloadCount / maxDl) * 100),
   }));

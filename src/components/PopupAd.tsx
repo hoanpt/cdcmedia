@@ -16,6 +16,8 @@ type PopupData = {
   delayMs: number;
 };
 
+const MotionDiv = motion.div as any;
+
 export default function PopupAd() {
   const [popup, setPopup] = useState<PopupData | null>(null);
   const [visible, setVisible] = useState(false);
@@ -44,14 +46,14 @@ export default function PopupAd() {
   return (
     <AnimatePresence>
       {visible && popup && (
-        <motion.div
+        <MotionDiv
           className="fixed inset-0 z-[60] flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
           {/* Backdrop */}
-          <motion.div
+          <MotionDiv
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             onClick={close}
             initial={{ opacity: 0 }}
@@ -59,7 +61,7 @@ export default function PopupAd() {
           />
 
           {/* Panel */}
-          <motion.div
+          <MotionDiv
             className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden"
             initial={{ scale: 0.88, opacity: 0, y: 24 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -110,8 +112,8 @@ export default function PopupAd() {
                 </div>
               </div>
             )}
-          </motion.div>
-        </motion.div>
+          </MotionDiv>
+        </MotionDiv>
       )}
     </AnimatePresence>
   );

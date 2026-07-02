@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
         year: year ? parseInt(year) : new Date().getFullYear(),
         categoryId,
         uploaderId: session.userId,
-        tags: { create: tagConnects.map((t) => ({ tagId: t.id })) },
+        tags: { create: tagConnects.map((t: any) => ({ tagId: t.id })) },
       },
       include: {
         category: { select: { id: true, name: true, color: true, icon: true } },

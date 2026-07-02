@@ -57,7 +57,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     tagsUpdate = {
       tags: {
         deleteMany: {},
-        create: tagRecords.map((t) => ({ tagId: t.id })),
+        create: tagRecords.map((t: any) => ({ tagId: t.id })),
       },
     };
   }

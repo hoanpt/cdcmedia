@@ -31,7 +31,7 @@ export default async function DashboardPage() {
   ]);
 
   const totalSize = storageAgg._sum.fileSize ?? 0;
-  const totalDownloads = ownFiles.reduce((s, f) => s + f.downloadCount, 0);
+  const totalDownloads = ownFiles.reduce((s: number, f: any) => s + f.downloadCount, 0);
 
   const stats = [
     { label: "Tài liệu", value: ownFiles.length, icon: FileArchive, color: "text-blue-600", bg: "bg-blue-50" },

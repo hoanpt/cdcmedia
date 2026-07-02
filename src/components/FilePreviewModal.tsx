@@ -12,6 +12,8 @@ interface Props {
   onClose: () => void;
 }
 
+const MotionDiv = motion.div as any;
+
 export default function FilePreviewModal({ file, onClose }: Props) {
   // Đóng bằng ESC
   useEffect(() => {
@@ -55,14 +57,14 @@ export default function FilePreviewModal({ file, onClose }: Props) {
 
   return (
     <AnimatePresence>
-      <motion.div
+      <MotionDiv
         className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
         {/* Backdrop */}
-        <motion.div
+        <MotionDiv
           className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm"
           onClick={onClose}
           initial={{ opacity: 0 }}
@@ -70,7 +72,7 @@ export default function FilePreviewModal({ file, onClose }: Props) {
         />
 
         {/* Panel — bottom sheet trên mobile, centered dialog trên desktop */}
-        <motion.div
+        <MotionDiv
           className="relative w-full sm:max-w-4xl bg-white/95 backdrop-blur-xl
                      rounded-t-3xl sm:rounded-3xl shadow-2xl border border-white/60
                      flex flex-col overflow-hidden
@@ -225,8 +227,8 @@ export default function FilePreviewModal({ file, onClose }: Props) {
               </a>
             </div>
           </div>
-        </motion.div>
-      </motion.div>
+        </MotionDiv>
+      </MotionDiv>
     </AnimatePresence>
   );
 }
