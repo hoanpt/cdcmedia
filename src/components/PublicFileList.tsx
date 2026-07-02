@@ -73,7 +73,7 @@ export default function PublicFileList({ files, categories }: Props) {
     <div className="flex gap-4 lg:gap-6">
       {/* Sidebar – category filter, desktop only */}
       <aside className="hidden lg:block w-56 xl:w-60 shrink-0">
-        <div className="card sticky top-20 space-y-1">
+        <div className="card sticky top-20 space-y-1 bg-white/70 backdrop-blur-xl border border-slate-200/50 p-4">
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
             <Filter className="w-3.5 h-3.5" /> Chuyên mục
           </p>
@@ -81,11 +81,13 @@ export default function PublicFileList({ files, categories }: Props) {
             onClick={() => setSelectedCategory("")}
             className={clsx(
               "w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-between",
-              !selectedCategory ? "bg-blue-600 text-white" : "text-slate-600 hover:bg-white/80"
+              !selectedCategory
+                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/10"
+                : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
             )}
           >
             <span>Tất cả</span>
-            <span className={clsx("text-xs", !selectedCategory ? "text-blue-100" : "text-slate-400")}>
+            <span className={clsx("text-xs font-bold px-2 py-0.5 rounded-full", !selectedCategory ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500")}>
               {files.length}
             </span>
           </button>
@@ -95,17 +97,19 @@ export default function PublicFileList({ files, categories }: Props) {
               onClick={() => setSelectedCategory(cat.id)}
               className={clsx(
                 "w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-between gap-2",
-                selectedCategory === cat.id ? "bg-blue-600 text-white" : "text-slate-600 hover:bg-white/80"
+                selectedCategory === cat.id
+                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/10"
+                  : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
               )}
             >
               <span className="flex items-center gap-2 truncate">
                 <span
-                  className="w-2 h-2 rounded-full shrink-0"
+                  className="w-2 h-2 rounded-full shrink-0 animate-pulse"
                   style={{ backgroundColor: selectedCategory === cat.id ? "white" : (cat.color ?? "#3B82F6") }}
                 />
                 <span className="truncate">{cat.name}</span>
               </span>
-              <span className={clsx("text-xs shrink-0", selectedCategory === cat.id ? "text-blue-100" : "text-slate-400")}>
+              <span className={clsx("text-xs font-bold px-2 py-0.5 rounded-full shrink-0", selectedCategory === cat.id ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500")}>
                 {cat._count.files}
               </span>
             </button>
@@ -226,28 +230,34 @@ export default function PublicFileList({ files, categories }: Props) {
         )}
 
         {/* Mobile category */}
-        <div className="lg:hidden flex gap-2 overflow-x-auto pb-2 mb-4">
-          <button
-            onClick={() => setSelectedCategory("")}
-            className={clsx(
-              "shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all",
-              !selectedCategory ? "bg-blue-600 text-white" : "bg-white/80 text-slate-600"
-            )}
-          >
-            Tất cả
-          </button>
-          {categories.map((cat) => (
+        <div className="lg:hidden scroll-mask-right relative mb-4">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
             <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
+              onClick={() => setSelectedCategory("")}
               className={clsx(
                 "shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all",
-                selectedCategory === cat.id ? "bg-blue-600 text-white" : "bg-white/80 text-slate-600"
+                !selectedCategory
+                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm"
+                  : "bg-white/90 text-slate-600 border border-slate-200/50 hover:bg-slate-50"
               )}
             >
-              {cat.name}
+              Tất cả
             </button>
-          ))}
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={clsx(
+                  "shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all",
+                  selectedCategory === cat.id
+                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm"
+                    : "bg-white/90 text-slate-600 border border-slate-200/50 hover:bg-slate-50"
+                )}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Count */}
@@ -268,19 +278,19 @@ export default function PublicFileList({ files, categories }: Props) {
             {filtered.map((file) => (
               <div
                 key={file.id}
-                className="card hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 flex flex-col gap-3 p-4"
+                className="card border border-slate-200/60 hover:border-blue-200/80 hover:shadow-lg hover:-translate-y-1 flex flex-col gap-3.5 p-4 animate-fade-in transition-all duration-300"
               >
                 {/* Icon + title */}
                 <div className="flex items-start gap-3">
-                  <div className="p-2.5 rounded-2xl bg-slate-50 shrink-0">
+                  <div className="p-2.5 rounded-2xl bg-blue-50/50 shrink-0 text-blue-600">
                     <FileIcon mimeType={file.fileType} className="w-6 h-6" />
                   </div>
-                  <div className="min-w-0">
-                    <h3 className="font-semibold text-slate-800 text-sm leading-snug line-clamp-2">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold text-slate-800 text-sm leading-snug line-clamp-2 hover:text-blue-600 transition-colors">
                       {file.title}
                     </h3>
                     <span
-                      className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full text-white font-medium"
+                      className="inline-block mt-1.5 text-[10px] px-2 py-0.5 rounded-full text-white font-semibold tracking-wider uppercase"
                       style={{ backgroundColor: file.category.color ?? "#3B82F6" }}
                     >
                       {file.category.name}
@@ -290,46 +300,46 @@ export default function PublicFileList({ files, categories }: Props) {
 
                 {/* Description */}
                 {file.description && (
-                  <p className="text-xs text-slate-500 line-clamp-2">{file.description}</p>
+                  <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{file.description}</p>
                 )}
 
                 {/* Tags */}
                 {file.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1.5">
                     {file.tags.slice(0, 3).map(({ tag }) => (
-                      <span key={tag.id} className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600">
+                      <span key={tag.id} className="text-[10px] px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium hover:bg-slate-200 transition-colors">
                         #{tag.name}
                       </span>
                     ))}
                     {file.tags.length > 3 && (
-                      <span className="text-xs text-slate-400">+{file.tags.length - 3}</span>
+                      <span className="text-[10px] font-bold text-slate-400 self-center">+{file.tags.length - 3}</span>
                     )}
                   </div>
                 )}
 
                 {/* Meta */}
-                <div className="flex items-center justify-between text-xs text-slate-400 mt-auto pt-2 border-t border-slate-100">
-                  <span>{formatFileSize(file.fileSize)}</span>
-                  <span>{formatDate(file.createdAt)}</span>
+                <div className="flex items-center justify-between text-[11px] text-slate-450 mt-auto pt-2.5 border-t border-slate-100/80">
+                  <span className="font-medium text-slate-400">{formatFileSize(file.fileSize)}</span>
+                  <span className="text-slate-400">{formatDate(file.createdAt)}</span>
                   {file.downloadCount > 0 && (
-                    <span className="flex items-center gap-1">
-                      <Download className="w-3 h-3" /> {file.downloadCount}
+                    <span className="flex items-center gap-1 text-slate-500 font-medium">
+                      <Download className="w-3 h-3 text-slate-400" /> {file.downloadCount}
                     </span>
                   )}
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 mt-auto">
+                <div className="flex gap-2 pt-1">
                   <button
                     onClick={() => setPreviewFile(file)}
-                    className="btn-secondary flex-1 flex items-center justify-center gap-1.5 text-xs py-2"
+                    className="btn-secondary flex-1 flex items-center justify-center gap-1.5 text-xs py-2 h-9"
                   >
                     <Eye className="w-3.5 h-3.5" /> Xem trước
                   </button>
                   <a
                     href={`/api/download/${file.id}`}
                     download
-                    className="btn-primary flex-1 flex items-center justify-center gap-1.5 text-xs py-2"
+                    className="btn-primary flex-1 flex items-center justify-center gap-1.5 text-xs py-2 h-9"
                   >
                     <Download className="w-3.5 h-3.5" /> Tải xuống
                   </a>
