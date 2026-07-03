@@ -230,15 +230,19 @@ export default function PublicFileList({ files, categories }: Props) {
         )}
 
         {/* Mobile category */}
-        <div className="lg:hidden scroll-mask-right relative mb-4">
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+        <div className="lg:hidden relative -mx-3 mb-4 overflow-hidden">
+          {/* Subtle fade overlays to indicate scrollability */}
+          <div className="absolute left-0 top-0 bottom-2 w-4 bg-gradient-to-r from-[#f8fafc] to-transparent pointer-events-none z-10" />
+          <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-[#f8fafc] to-transparent pointer-events-none z-10" />
+          
+          <div className="flex gap-2 overflow-x-auto px-3 pb-2 scrollbar-none snap-x snap-mandatory">
             <button
               onClick={() => setSelectedCategory("")}
               className={clsx(
-                "shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all",
+                "shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all snap-start",
                 !selectedCategory
-                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm"
-                  : "bg-white/90 text-slate-600 border border-slate-200/50 hover:bg-slate-50"
+                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm shadow-blue-500/15"
+                  : "bg-white text-slate-600 border border-slate-200/50 hover:bg-slate-50"
               )}
             >
               Tất cả
@@ -248,10 +252,10 @@ export default function PublicFileList({ files, categories }: Props) {
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
                 className={clsx(
-                  "shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all",
+                  "shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all snap-start",
                   selectedCategory === cat.id
-                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm"
-                    : "bg-white/90 text-slate-600 border border-slate-200/50 hover:bg-slate-50"
+                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm shadow-blue-500/15"
+                    : "bg-white text-slate-600 border border-slate-200/50 hover:bg-slate-50"
                 )}
               >
                 {cat.name}
