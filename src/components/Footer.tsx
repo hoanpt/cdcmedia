@@ -55,18 +55,21 @@ export default function Footer() {
           <div className="space-y-3">
             <p className="text-xs font-bold text-slate-700 uppercase tracking-widest">Liên hệ</p>
             <div className="flex flex-col gap-2 text-xs text-slate-500">
+              <div className="font-semibold text-slate-700 mb-1">
+                Trung tâm Kiểm soát Bệnh tật Thành phố Đà Nẵng
+              </div>
               <div className="flex items-start gap-2">
                 <MapPin className="w-3.5 h-3.5 mt-0.5 text-blue-500 shrink-0" />
-                <span>3 Quang Trung, Hải Châu, Đà Nẵng</span>
+                <span>Trụ sở chính: 118 Lê Đình Lý, Phường Thanh Khê, Thành phố Đà Nẵng</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                <span>0236 382 2663</span>
+                <span>0236 3890 407</span>
               </div>
               <div className="flex items-center gap-2">
                 <Globe className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                <a href="https://cdcdanang.vn" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">
-                  cdcdanang.vn
+                <a href="mailto:kiemsoatbenhtat@danang.gov.vn" className="hover:text-blue-600 transition-colors">
+                  kiemsoatbenhtat@danang.gov.vn
                 </a>
               </div>
             </div>
