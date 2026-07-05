@@ -6,9 +6,9 @@ import { MapPin, Phone, Globe, Heart } from "lucide-react";
 export default function Footer() {
   const year = new Date().getFullYear();
   return (
-    <footer className="relative mt-8 bg-white/80 backdrop-blur-xl border-t border-slate-200/60">
+    <footer className="relative mt-8 bg-[#1D78B8] border-t border-[#0d5485]/40 text-blue-100">
       {/* Gradient accent line */}
-      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#1D78B8] via-[#0d5485] to-[#F26A21] opacity-80" />
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 via-orange-500 to-red-500" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
@@ -20,20 +20,20 @@ export default function Footer() {
                 <span className="hidden font-extrabold text-blue-600 text-[10px]">CDC</span>
               </div>
               <div className="flex flex-col leading-none">
-                <span className="font-extrabold text-slate-800 text-base tracking-tight" style={{ color: "#1D78B8" }}>
-                  CDC<span className="text-orange-500" style={{ color: "#F26A21" }}>Media</span>
+                <span className="font-extrabold text-white text-base tracking-tight">
+                  CDC<span className="text-orange-400">Media</span>
                 </span>
-                <span className="text-[9px] font-medium text-slate-400 tracking-widest uppercase">Ngân hàng Tài liệu</span>
+                <span className="text-[9px] font-medium text-blue-200 tracking-widest uppercase">Ngân hàng Tài liệu</span>
               </div>
             </div>
-            <p className="text-xs text-slate-500 leading-relaxed max-w-[200px]">
+            <p className="text-xs text-blue-100 leading-relaxed max-w-[200px]">
               Hệ thống quản lý và chia sẻ tài liệu truyền thông sức khỏe cộng đồng.
             </p>
           </div>
 
           {/* Quick links */}
           <div className="space-y-3">
-            <p className="text-xs font-bold text-slate-700 uppercase tracking-widest">Truy cập nhanh</p>
+            <p className="text-xs font-bold text-white uppercase tracking-widest">Truy cập nhanh</p>
             <nav className="flex flex-col gap-2">
               {[
                 { href: "/", label: "Trang chủ" },
@@ -44,9 +44,9 @@ export default function Footer() {
                 <Link
                   key={href}
                   href={href}
-                  className="text-xs text-slate-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 group"
+                  className="text-xs text-blue-200 hover:text-white transition-colors flex items-center gap-1.5 group"
                 >
-                  <span className="w-1 h-1 rounded-full bg-slate-300 group-hover:bg-blue-500 transition-colors" />
+                  <span className="w-1 h-1 rounded-full bg-blue-400 group-hover:bg-orange-400 transition-colors" />
                   {label}
                 </Link>
               ))}
@@ -55,22 +55,22 @@ export default function Footer() {
 
           {/* Contact */}
           <div className="space-y-3">
-            <p className="text-xs font-bold text-slate-700 uppercase tracking-widest">Liên hệ</p>
-            <div className="flex flex-col gap-2 text-xs text-slate-500">
-              <div className="font-semibold text-slate-700 mb-1">
+            <p className="text-xs font-bold text-white uppercase tracking-widest">Liên hệ</p>
+            <div className="flex flex-col gap-2 text-xs text-blue-200">
+              <div className="font-semibold text-white mb-1">
                 Trung tâm Kiểm soát Bệnh tật Thành phố Đà Nẵng
               </div>
               <div className="flex items-start gap-2">
-                <MapPin className="w-3.5 h-3.5 mt-0.5 text-blue-500 shrink-0" />
+                <MapPin className="w-3.5 h-3.5 mt-0.5 text-blue-300 shrink-0" />
                 <span>Trụ sở chính: 118 Lê Đình Lý, Phường Thanh Khê, Thành phố Đà Nẵng</span>
               </div>
               <div className="flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                <Phone className="w-3.5 h-3.5 text-blue-300 shrink-0" />
                 <span>0236 3890 407</span>
               </div>
               <div className="flex items-center gap-2">
-                <Globe className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                <a href="mailto:kiemsoatbenhtat@danang.gov.vn" className="hover:text-blue-600 transition-colors">
+                <Globe className="w-3.5 h-3.5 text-blue-300 shrink-0" />
+                <a href="mailto:kiemsoatbenhtat@danang.gov.vn" className="hover:text-white transition-colors">
                   kiemsoatbenhtat@danang.gov.vn
                 </a>
               </div>
@@ -79,14 +79,13 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-8 pt-5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6 mt-8 border-t border-[#0d5485]/40 text-[11px] font-medium text-blue-300">
           <p>
-            © {year}{" "}
-            <span className="font-semibold text-slate-600">Trung tâm Kiểm soát Bệnh tật TP. Đà Nẵng</span>
+            © {year} <span className="font-bold text-white">CDC Đà Nẵng</span>. Bản quyền thuộc về Trung tâm Kiểm soát Bệnh tật Đà Nẵng.
           </p>
-          <p className="flex items-center gap-1">
-            Phát triển bởi <Heart className="w-3 h-3 text-red-400 inline mx-0.5" /> Bộ phận CNTT – CDC Đà Nẵng
-          </p>
+          <div className="flex items-center gap-1.5">
+            Thiết kế với <Heart className="w-3.5 h-3.5 text-red-400 fill-red-400" /> bởi IT CDC
+          </div>
         </div>
       </div>
     </footer>

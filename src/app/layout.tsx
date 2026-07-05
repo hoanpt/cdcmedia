@@ -40,15 +40,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Navbar session={session} />
         
         {/* Banner ngang TOP — dưới Navbar */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full mt-4">
-          <BannerStrip position="TOP" className="rounded-2xl overflow-hidden shadow-sm" />
+        <div className="w-full">
+          <BannerStrip position="TOP" className="w-full overflow-hidden" />
         </div>
         
         <main className="flex-1">{children}</main>
         
         {/* Banner ngang BOTTOM — trên Footer */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full my-4">
-          <BannerStrip position="BOTTOM" className="rounded-2xl overflow-hidden shadow-sm" />
+        <div className="w-full">
+          <BannerStrip position="BOTTOM" className="w-full overflow-hidden" />
         </div>
         
         <Footer />

@@ -37,8 +37,7 @@ export default function Navbar({ session }: NavbarProps) {
     <header className="sticky top-0 z-50">
       {/* Main navbar */}
       <nav
-        className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60"
-        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03)" }}
+        className="bg-[#1D78B8] border-b border-[#0d5485]/30 shadow-md"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-4">
           {/* Logo */}
@@ -48,10 +47,10 @@ export default function Navbar({ session }: NavbarProps) {
               <span className="hidden font-extrabold text-blue-600 text-[10px]">CDC</span>
             </div>
             <div className="hidden sm:flex flex-col leading-none">
-              <span className="font-extrabold text-slate-800 text-base tracking-tight" style={{ color: "#1D78B8" }}>
-                CDC<span className="text-orange-500" style={{ color: "#F26A21" }}>Media</span>
+              <span className="font-extrabold text-white text-base tracking-tight">
+                CDC<span className="text-orange-400">Media</span>
               </span>
-              <span className="text-[9px] font-medium text-slate-400 tracking-widest uppercase">Ngân hàng Tài liệu</span>
+              <span className="text-[9px] font-medium text-blue-100 tracking-widest uppercase opacity-90">Ngân hàng Tài liệu</span>
             </div>
           </Link>
 
@@ -63,10 +62,10 @@ export default function Navbar({ session }: NavbarProps) {
                 <Link
                   key={href}
                   href={href}
-                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-sm font-semibold transition-all
+                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200
                     ${isActive
-                      ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-md shadow-[#1D78B8]/15"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}
+                      ? "bg-white/20 text-white shadow-sm"
+                      : "text-blue-100 hover:text-white hover:bg-white/10"}`}
                 >
                   <Icon className="w-4 h-4" />
                   {label}
@@ -80,45 +79,41 @@ export default function Navbar({ session }: NavbarProps) {
             {session ? (
               <>
                 <div className="flex flex-col items-end leading-none">
-                  <span className="text-sm font-semibold text-slate-700">
+                  <span className="text-sm font-semibold text-white">
                     {session.displayName ?? session.username}
                   </span>
-                  <span className="text-[10px] mt-0.5 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold tracking-wide uppercase">
+                  <span className="text-[10px] mt-0.5 px-2 py-0.5 rounded-full bg-blue-700/50 text-blue-100 font-bold tracking-wide uppercase border border-blue-600">
                     {session.role === "ADMIN" ? "Admin" : session.role === "UPLOADER" ? "Uploader" : "Viewer"}
                   </span>
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="btn-secondary flex items-center gap-1.5 text-sm text-red-600 border-red-200/60 hover:bg-red-50 hover:border-red-300"
+                  className="btn-secondary flex items-center gap-1.5 text-sm text-red-100 bg-red-500/20 border-red-500/30 hover:bg-red-500/40 hover:text-white"
                 >
                   <LogOut className="w-4 h-4" /> Đăng xuất
                 </button>
               </>
             ) : (
-              <Link href="/login" className="btn-primary text-sm">Đăng nhập</Link>
+              <Link href="/login" className="px-4 py-2 rounded-xl text-sm font-semibold bg-white text-[#1D78B8] hover:bg-blue-50 transition-colors shadow-sm">Đăng nhập</Link>
             )}
           </div>
 
           {/* Mobile toggle — min 44×44 touch target */}
           <button
-            className="md:hidden w-11 h-11 flex items-center justify-center rounded-xl hover:bg-slate-100/80 transition-colors"
+            className="md:hidden w-11 h-11 flex items-center justify-center rounded-xl hover:bg-white/10 transition-colors"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label={mobileOpen ? "Đóng menu" : "Mở menu"}
             aria-expanded={mobileOpen}
           >
-            {mobileOpen ? <X className="w-5 h-5 text-slate-700" /> : <Menu className="w-5 h-5 text-slate-700" />}
+            {mobileOpen ? <X className="w-5 h-5 text-white" /> : <Menu className="w-5 h-5 text-white" />}
           </button>
         </div>
       </nav>
 
       {/* Mobile menu — smooth slide down */}
       {mobileOpen && (
-        <div
-          className="md:hidden bg-white/95 backdrop-blur-xl border-b border-slate-200/60 shadow-lg animate-fade-in"
-          role="navigation"
-          aria-label="Mobile navigation"
-        >
-          <div className="max-w-7xl mx-auto px-4 py-3 space-y-1">
+        <div className="md:hidden bg-[#0d5485] border-t border-blue-800 shadow-xl overflow-hidden">
+          <div className="px-4 py-3 space-y-1">
             {links.map(({ href, label, icon: Icon }) => {
               const isActive = pathname === href || (href !== "/" && pathname.startsWith(href + "/"));
               return (
@@ -126,28 +121,30 @@ export default function Navbar({ session }: NavbarProps) {
                   key={href}
                   href={href}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all min-h-[44px]
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-base font-semibold transition-colors
                     ${isActive
-                      ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-sm"
-                      : "text-slate-700 hover:bg-slate-100/80"}`}
+                      ? "bg-white/20 text-white shadow-sm"
+                      : "text-blue-100 hover:text-white hover:bg-white/10"}`}
                 >
                   <Icon className="w-4 h-4" /> {label}
                 </Link>
               );
             })}
 
-            <div className="border-t border-slate-100 pt-2 mt-2">
+            <div className="mt-4 pt-4 border-t border-blue-800 space-y-4">
               {session ? (
                 <>
-                  <div className="px-4 py-2 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-700">{session.displayName ?? session.username}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold tracking-wide uppercase">
-                      {session.role === "ADMIN" ? "Admin" : session.role === "UPLOADER" ? "Uploader" : "Viewer"}
+                  <div className="px-4 flex flex-col">
+                    <span className="text-base font-semibold text-white">
+                      {session.displayName ?? session.username}
+                    </span>
+                    <span className="text-xs text-blue-200 uppercase tracking-wider font-medium mt-0.5">
+                      {session.role}
                     </span>
                   </div>
                   <button
-                    onClick={() => { setMobileOpen(false); handleLogout(); }}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50/80 min-h-[44px] transition-colors"
+                    onClick={() => { handleLogout(); setMobileOpen(false); }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-red-100 bg-red-500/20 border border-red-500/30 hover:bg-red-500/40 hover:text-white font-semibold transition-colors"
                   >
                     <LogOut className="w-4 h-4" /> Đăng xuất
                   </button>
@@ -156,7 +153,7 @@ export default function Navbar({ session }: NavbarProps) {
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white min-h-[44px] transition-colors"
+                  className="flex items-center justify-center w-full px-4 py-3 rounded-xl font-semibold bg-white text-[#1D78B8] hover:bg-blue-50 transition-colors shadow-sm"
                 >
                   Đăng nhập
                 </Link>
