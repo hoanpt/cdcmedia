@@ -91,7 +91,7 @@ export default function FilePreviewModal({ file, onClose }: Props) {
           {/* Header */}
           <div className="flex items-start justify-between gap-3 px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-100 shrink-0">
             <div className="flex items-start gap-3 min-w-0">
-              <FileIcon mimeType={file.fileType} className="w-8 h-8 shrink-0 mt-0.5" />
+              <FileIcon mimeType={file.fileType} filename={file.filename} className="w-8 h-8 shrink-0 mt-0.5" />
               <div className="min-w-0">
                 <h2 className="font-bold text-slate-800 text-base sm:text-lg leading-tight line-clamp-2">
                   {file.title}
@@ -144,7 +144,7 @@ export default function FilePreviewModal({ file, onClose }: Props) {
             {isAudio && (
               <div className="flex flex-col items-center justify-center gap-4 py-10 px-6">
                 <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
-                  <FileIcon mimeType={file.fileType} className="w-8 h-8" />
+                  <FileIcon mimeType={file.fileType} filename={file.filename} className="w-8 h-8" />
                 </div>
                 <audio src={proxyUrl} controls className="w-full max-w-sm" />
               </div>

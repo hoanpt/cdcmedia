@@ -284,7 +284,7 @@ export default function PublicFileList({ files, categories }: Props) {
                 {/* Icon + title */}
                 <div className="flex items-start gap-3">
                   <div className="p-2.5 rounded-2xl bg-blue-50/50 shrink-0 text-blue-600">
-                    <FileIcon mimeType={file.fileType} className="w-6 h-6" />
+                    <FileIcon mimeType={file.fileType} filename={file.filename} className="w-6 h-6" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="font-semibold text-slate-800 text-sm leading-snug line-clamp-2 hover:text-blue-600 transition-colors">

@@ -137,7 +137,7 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
-                  <FileIcon mimeType={file.fileType} className="w-8 h-8 shrink-0" />
+                  <FileIcon mimeType={file.fileType} filename={file.filename} className="w-8 h-8 shrink-0" />
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-slate-800 text-sm truncate">{file.title}</p>
                     <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-0.5">
