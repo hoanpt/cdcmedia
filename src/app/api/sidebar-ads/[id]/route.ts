@@ -18,6 +18,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
       title: body.title,
       imageUrl: body.imageUrl,
       linkUrl: body.linkUrl ?? null,
+      position: body.position,
       isActive: body.isActive,
       sortOrder: body.sortOrder ?? 0,
       startAt: body.startAt ? new Date(body.startAt) : null,

@@ -109,13 +109,14 @@ model Banner {
   updatedAt DateTime @updatedAt
 }
 
-// Sidebar dọc phải
+// Sidebar dọc
 // position: "RIGHT" | "LEFT"
 model SidebarAd {
   id        String   @id @default(uuid())
   title     String
   imageUrl  String
   linkUrl   String?
+  position  String   @default("LEFT")
   isActive  Boolean  @default(true)
   sortOrder Int      @default(0)
   startAt   DateTime?

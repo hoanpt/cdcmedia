@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
       title: body.title,
       imageUrl: body.imageUrl,
       linkUrl: body.linkUrl ?? null,
+      position: body.position ?? "LEFT",
       isActive: body.isActive ?? true,
       sortOrder: body.sortOrder ?? 0,
       startAt: body.startAt ? new Date(body.startAt) : null,

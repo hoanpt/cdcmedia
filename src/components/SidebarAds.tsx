@@ -25,17 +25,12 @@ export default function SidebarAds() {
   const visible = ads.filter((a) => !dismissed.has(a.id));
   if (!visible.length) return null;
 
-  // Chia đều quảng cáo ra 2 bên, nếu chỉ có 1 quảng cáo thì nhân đôi đối xứng cho đẹp mắt
-  let leftAds = visible.filter((_, i) => i % 2 === 0);
-  let rightAds = visible.filter((_, i) => i % 2 !== 0);
-
-  if (visible.length === 1) {
-    leftAds = [visible[0]];
-    rightAds = [visible[0]];
-  }
+  // Phân loại quảng cáo trái phải theo vị trí (mặc định nếu null thì xem như LEFT)
+  const leftAds = visible.filter(a => a.position === "LEFT");
+  const rightAds = visible.filter(a => a.position === "RIGHT");
 
   const renderAdCard = (ad: Ad) => (
-    <div key={ad.id} className="relative group rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 bg-white p-0.5">
+    <div key={ad.id} className="relative group rounded-2xl overflow-hidden shadow-md border border-slate-200/80 bg-white p-1">
       {ad.linkUrl ? (
         <a href={ad.linkUrl} target="_blank" rel="noopener noreferrer" title={ad.title} className="block w-full h-full">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -73,13 +68,13 @@ export default function SidebarAds() {
       {/* Popup dọc bên TRÁI */}
       {leftAds.length > 0 && (
         <aside
-          className="hidden xl:flex flex-col gap-2 fixed top-24 w-28 2xl:w-36 z-40 animate-fade-in"
-          style={{ left: "max(12px, calc(50% - 640px - 144px - 16px))" }}
+          className="hidden xl:flex flex-col gap-3 fixed top-24 w-36 2xl:w-48 z-40 animate-fade-in"
+          style={{ left: "max(12px, calc(50% - 640px - 192px - 24px))" }}
         >
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center select-none">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center select-none">
             Tuyên truyền
           </p>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             {leftAds.map(renderAdCard)}
           </div>
         </aside>
@@ -88,13 +83,13 @@ export default function SidebarAds() {
       {/* Popup dọc bên PHẢI */}
       {rightAds.length > 0 && (
         <aside
-          className="hidden xl:flex flex-col gap-2 fixed top-24 w-28 2xl:w-36 z-40 animate-fade-in"
-          style={{ right: "max(12px, calc(50% - 640px - 144px - 16px))" }}
+          className="hidden xl:flex flex-col gap-3 fixed top-24 w-36 2xl:w-48 z-40 animate-fade-in"
+          style={{ right: "max(12px, calc(50% - 640px - 192px - 24px))" }}
         >
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center select-none">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center select-none">
             Tuyên truyền
           </p>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             {rightAds.map(renderAdCard)}
           </div>
         </aside>

@@ -12,7 +12,7 @@ type Banner = {
 };
 type SidebarAd = {
   id: string; title: string; imageUrl: string; linkUrl: string | null;
-  isActive: boolean; sortOrder: number;
+  position: string; isActive: boolean; sortOrder: number;
 };
 type Popup = {
   id: string; title: string; imageUrl: string | null; content: string | null;
@@ -20,7 +20,7 @@ type Popup = {
   showOnce: boolean; delayMs: number;
 };
 
-type Tab = "banners" | "sidebar" | "popup";
+type Tab = "banners" | "sidebar" | "popup" | "logo";
 
 // ── Form helpers ────────────────────────────────────────────────────────────
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -141,7 +141,7 @@ function SidebarManager() {
   const [items, setItems] = useState<SidebarAd[]>([]);
   const [adding, setAdding] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ title: "", imageUrl: "", linkUrl: "", sortOrder: "0" });
+  const [form, setForm] = useState({ title: "", imageUrl: "", linkUrl: "", position: "LEFT", sortOrder: "0" });
 
   const load = useCallback(() => {
     fetch("/api/sidebar-ads")
@@ -149,7 +149,7 @@ function SidebarManager() {
   }, []);
   useEffect(() => { load(); }, [load]);
 
-  function resetForm() { setForm({ title: "", imageUrl: "", linkUrl: "", sortOrder: "0" }); }
+  function resetForm() { setForm({ title: "", imageUrl: "", linkUrl: "", position: "LEFT", sortOrder: "0" }); }
 
   async function save() {
     if (!form.title || !form.imageUrl) return toast.error("Cần tiêu đề và URL ảnh");
@@ -174,13 +174,15 @@ function SidebarManager() {
 
   function startEdit(item: SidebarAd) {
     setEditId(item.id); setAdding(true);
-    setForm({ title: item.title, imageUrl: item.imageUrl, linkUrl: item.linkUrl ?? "", sortOrder: String(item.sortOrder) });
+    setForm({ title: item.title, imageUrl: item.imageUrl, linkUrl: item.linkUrl ?? "", position: item.position, sortOrder: String(item.sortOrder) });
   }
+
+  const posLabel: Record<string, string> = { LEFT: "Bên trái", RIGHT: "Bên phải" };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500">Ảnh tuyên truyền cột bên phải trang chủ (chỉ hiện trên màn hình lớn ≥1280px)</p>
+        <p className="text-sm text-slate-500">Ảnh tuyên truyền 2 bên trang chủ (hiện trên màn hình lớn ≥1280px)</p>
         <button onClick={() => { setAdding(true); setEditId(null); resetForm(); }} className="btn-primary flex items-center gap-1.5 text-sm">
           <Plus className="w-4 h-4" /> Thêm ảnh
         </button>
@@ -191,6 +193,12 @@ function SidebarManager() {
           <h4 className="font-semibold text-slate-700 text-sm">{editId ? "Sửa ảnh sidebar" : "Ảnh sidebar mới"}</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Tiêu đề *"><input className="input-base text-sm" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Tên ảnh tuyên truyền" /></Field>
+            <Field label="Vị trí">
+              <select className="input-base text-sm" value={form.position} onChange={e => setForm(f => ({ ...f, position: e.target.value }))}>
+                <option value="LEFT">Cột bên trái</option>
+                <option value="RIGHT">Cột bên phải</option>
+              </select>
+            </Field>
             <Field label="Thứ tự hiển thị"><input type="number" className="input-base text-sm" value={form.sortOrder} onChange={e => setForm(f => ({ ...f, sortOrder: e.target.value }))} /></Field>
             <div className="sm:col-span-2">
               <Field label="Ảnh tuyên truyền * (Kích thước khuyên dùng: 300x400 px hoặc 400x400 px)">
@@ -215,7 +223,7 @@ function SidebarManager() {
             <img src={item.imageUrl} alt={item.title} className="w-12 h-16 object-cover rounded-xl shrink-0 border border-slate-100" onError={e => (e.currentTarget.style.display = "none")} />
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-slate-700 text-sm truncate">{item.title}</p>
-              <p className="text-xs text-slate-400">Thứ tự: {item.sortOrder}</p>
+              <p className="text-xs text-slate-400">{posLabel[item.position]} · Thứ tự: {item.sortOrder}</p>
             </div>
             <div className="flex items-center gap-1 shrink-0">
               <button onClick={() => toggle(item)} className="p-1.5 rounded-lg hover:bg-slate-100 transition text-slate-500">
@@ -356,10 +364,54 @@ function PopupManager() {
 
 // ── Main component ───────────────────────────────────────────────────────────
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
+  { id: "logo", label: "Logo Website", icon: Image },
   { id: "banners", label: "Banner ngang", icon: Image },
   { id: "sidebar", label: "Sidebar dọc", icon: Megaphone },
   { id: "popup", label: "Popup", icon: Bell },
 ];
+
+function LogoManager() {
+  const [logoUrl, setLogoUrl] = useState("/logo.png");
+  
+  return (
+    <div className="space-y-4">
+      <div className="border border-blue-200 rounded-2xl p-4 bg-blue-50/50 space-y-4">
+        <h4 className="font-semibold text-slate-700 text-sm">Cập nhật Logo hệ thống</h4>
+        <p className="text-xs text-slate-500">Logo sẽ hiển thị ở thanh điều hướng (Navbar) và dưới chân trang (Footer). Nên dùng ảnh định dạng PNG có nền trong suốt (transparent).</p>
+        <div className="flex flex-col sm:flex-row gap-6 items-start">
+          <div className="w-24 h-24 shrink-0 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center p-2 relative overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" onError={e => e.currentTarget.style.display = "none"} />
+          </div>
+          <div className="flex-1 space-y-2 min-w-0 w-full">
+            <Field label="Tải lên hình ảnh mới">
+              <input type="file" accept="image/png, image/jpeg, image/webp" className="input-base text-sm" onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const fd = new FormData();
+                fd.append("file", file);
+                const toastId = toast.loading("Đang tải lên...");
+                try {
+                  const res = await fetch("/api/upload-logo", { method: "POST", body: fd });
+                  if (res.ok) {
+                    const data = await res.json();
+                    setLogoUrl(data.url);
+                    toast.success("Đã cập nhật Logo! Hãy F5 trang web để thấy thay đổi.", { id: toastId });
+                  } else {
+                    const data = await res.json();
+                    toast.error(data.error || "Lỗi tải ảnh", { id: toastId });
+                  }
+                } catch {
+                  toast.error("Lỗi mạng", { id: toastId });
+                }
+              }} />
+            </Field>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function ManageAds() {
   const [tab, setTab] = useState<Tab>("banners");
@@ -380,6 +432,7 @@ export default function ManageAds() {
           </button>
         ))}
       </div>
+      {tab === "logo" && <LogoManager />}
       {tab === "banners" && <BannerManager />}
       {tab === "sidebar" && <SidebarManager />}
       {tab === "popup" && <PopupManager />}
