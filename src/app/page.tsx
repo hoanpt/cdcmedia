@@ -48,6 +48,9 @@ export default async function HomePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-10 space-y-6 sm:space-y-8">
+      {/* Banner TOP — phía trên trang chủ */}
+      <BannerStrip position="TOP" className="rounded-2xl overflow-hidden shadow-sm" />
+
       {/* Hero — the subject is a government health media archive: authoritative, trusted, accessible */}
       <div className="relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/70 backdrop-blur-xl">
         {/* Background gradient blobs */}
