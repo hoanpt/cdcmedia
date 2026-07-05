@@ -129,6 +129,7 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
           ref={inputRef}
           type="file"
           className="hidden"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.webp,.mp4,.avi,.mkv,.mp3,.wav,.zip,.rar"
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
         />
       </div>

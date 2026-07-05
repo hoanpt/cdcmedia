@@ -7,7 +7,7 @@ import { existsSync } from "fs";
 import path from "path";
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"];
+const ALLOWED = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp", "image/svg+xml"];
 
 export async function POST(req: NextRequest) {
   const session = await getSession();
