@@ -52,8 +52,8 @@ export default async function HomePage() {
       <div className="relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/70 backdrop-blur-xl">
         {/* Background gradient blobs */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-24 -left-24 w-64 h-64 rounded-full bg-blue-200/30 blur-3xl" />
-          <div className="absolute -bottom-16 -right-16 w-64 h-64 rounded-full bg-indigo-200/25 blur-3xl" />
+          <div className="absolute -top-24 -left-24 w-64 h-64 rounded-full bg-[#1D78B8]/10 blur-3xl" />
+          <div className="absolute -bottom-16 -right-16 w-64 h-64 rounded-full bg-[#F26A21]/10 blur-3xl" />
         </div>
         {/* Grid overlay */}
         <div className="absolute inset-0 bg-grid opacity-50 pointer-events-none" />
@@ -61,9 +61,9 @@ export default async function HomePage() {
         <div className="relative px-6 sm:px-10 py-10 sm:py-14">
           {/* Authority badge */}
           <div className="flex justify-center mb-5">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-600/10 to-indigo-600/10 border border-blue-200/60 text-blue-700 text-xs sm:text-sm font-semibold">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#1D78B8]/10 to-[#1D78B8]/5 border border-[#1D78B8]/20 text-[#1D78B8] text-xs sm:text-sm font-semibold">
               <Shield className="w-3.5 h-3.5" />
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#D31224] animate-pulse" />
               Trung tâm Kiểm soát Bệnh tật TP. Đà Nẵng
             </div>
           </div>

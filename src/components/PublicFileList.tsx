@@ -82,7 +82,7 @@ export default function PublicFileList({ files, categories }: Props) {
             className={clsx(
               "w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-between",
               !selectedCategory
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/10"
+                ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-md shadow-blue-500/10"
                 : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
             )}
           >
@@ -98,7 +98,7 @@ export default function PublicFileList({ files, categories }: Props) {
               className={clsx(
                 "w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-between gap-2",
                 selectedCategory === cat.id
-                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/10"
+                  ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-md shadow-blue-500/10"
                   : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
               )}
             >
@@ -238,7 +238,7 @@ export default function PublicFileList({ files, categories }: Props) {
               className={clsx(
                 "w-full text-left px-4 py-3 rounded-xl text-sm font-semibold tracking-wide transition-all",
                 !selectedCategory
-                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm shadow-blue-500/15"
+                  ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-sm shadow-blue-500/15"
                   : "bg-white text-slate-600 border border-slate-200/50 hover:bg-slate-50"
               )}
             >
@@ -251,7 +251,7 @@ export default function PublicFileList({ files, categories }: Props) {
                 className={clsx(
                   "w-full text-left px-4 py-3 rounded-xl text-sm font-semibold tracking-wide transition-all",
                   selectedCategory === cat.id
-                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm shadow-blue-500/15"
+                    ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-sm shadow-blue-500/15"
                     : "bg-white text-slate-600 border border-slate-200/50 hover:bg-slate-50"
                 )}
               >

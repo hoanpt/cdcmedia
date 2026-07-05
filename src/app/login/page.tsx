@@ -48,7 +48,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm sm:max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-600 shadow-lg mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-gradient-to-br from-[#1D78B8] to-[#0d5485] shadow-lg mb-4">
             <Lock className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-800">Đăng nhập hệ thống</h1>

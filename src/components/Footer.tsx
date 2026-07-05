@@ -7,19 +7,20 @@ export default function Footer() {
   return (
     <footer className="relative mt-8 bg-white/80 backdrop-blur-xl border-t border-slate-200/60">
       {/* Gradient accent line */}
-      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-600 opacity-60" />
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#1D78B8] via-[#0d5485] to-[#F26A21] opacity-80" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
           {/* Brand column */}
           <div className="sm:col-span-1 space-y-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20">
-                <span className="text-white font-extrabold text-xs tracking-tight">CDC</span>
+            <div className="flex items-center gap-3">
+              <div className="relative w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm border border-slate-100 overflow-hidden">
+                <img src="/logo.png" alt="CDC Đà Nẵng Logo" className="w-full h-full object-contain p-0.5" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
+                <span className="hidden font-extrabold text-blue-600 text-[10px]">CDC</span>
               </div>
               <div className="flex flex-col leading-none">
-                <span className="font-extrabold text-slate-800 text-base tracking-tight">
-                  CDC<span className="text-blue-600">Media</span>
+                <span className="font-extrabold text-slate-800 text-base tracking-tight" style={{ color: "#1D78B8" }}>
+                  CDC<span className="text-orange-500" style={{ color: "#F26A21" }}>Media</span>
                 </span>
                 <span className="text-[9px] font-medium text-slate-400 tracking-widest uppercase">Ngân hàng Tài liệu</span>
               </div>

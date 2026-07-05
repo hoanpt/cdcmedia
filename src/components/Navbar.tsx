@@ -42,13 +42,14 @@ export default function Navbar({ session }: NavbarProps) {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:shadow-blue-500/30 transition-all duration-200 group-hover:scale-105">
-              <span className="text-white font-extrabold text-xs tracking-tight">CDC</span>
+          <Link href="/" className="flex items-center gap-3 shrink-0 group">
+            <div className="relative w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover:shadow-md transition-all duration-200 group-hover:scale-105 overflow-hidden">
+              <img src="/logo.png" alt="CDC Đà Nẵng Logo" className="w-full h-full object-contain p-0.5" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
+              <span className="hidden font-extrabold text-blue-600 text-[10px]">CDC</span>
             </div>
             <div className="hidden sm:flex flex-col leading-none">
-              <span className="font-extrabold text-slate-800 text-base tracking-tight">
-                CDC<span className="text-blue-600">Media</span>
+              <span className="font-extrabold text-slate-800 text-base tracking-tight" style={{ color: "#1D78B8" }}>
+                CDC<span className="text-orange-500" style={{ color: "#F26A21" }}>Media</span>
               </span>
               <span className="text-[9px] font-medium text-slate-400 tracking-widest uppercase">Ngân hàng Tài liệu</span>
             </div>
@@ -62,10 +63,10 @@ export default function Navbar({ session }: NavbarProps) {
                 <Link
                   key={href}
                   href={href}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200
+                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-sm font-semibold transition-all
                     ${isActive
-                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/15"
-                      : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"}`}
+                      ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-md shadow-[#1D78B8]/15"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}
                 >
                   <Icon className="w-4 h-4" />
                   {label}
@@ -127,7 +128,7 @@ export default function Navbar({ session }: NavbarProps) {
                   onClick={() => setMobileOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all min-h-[44px]
                     ${isActive
-                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm"
+                      ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-sm"
                       : "text-slate-700 hover:bg-slate-100/80"}`}
                 >
                   <Icon className="w-4 h-4" /> {label}
@@ -155,7 +156,7 @@ export default function Navbar({ session }: NavbarProps) {
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 text-white min-h-[44px] transition-colors"
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white min-h-[44px] transition-colors"
                 >
                   Đăng nhập
                 </Link>

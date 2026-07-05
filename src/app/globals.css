@@ -46,14 +46,14 @@
 /* Gradient background */
 .gradient-bg {
   background:
-    radial-gradient(ellipse at top left, #eff6ff 0%, transparent 60%),
-    radial-gradient(ellipse at bottom right, #f5f3ff 0%, transparent 60%),
+    radial-gradient(ellipse at top left, #f0f7fb 0%, transparent 60%),
+    radial-gradient(ellipse at bottom right, #f2fafe 0%, transparent 60%),
     radial-gradient(ellipse at center, #fafafa 0%, #f8fafc 100%);
 }
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, #1D78B8 0%, #0d5485 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -73,7 +73,7 @@
 
 /* Buttons */
 .btn-primary {
-  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, #1D78B8 0%, #0d5485 100%);
   color: white;
   font-weight: 600;
   padding: 0.625rem 1.25rem;
@@ -81,15 +81,15 @@
   border: 1px solid rgba(255,255,255,0.1);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(37,99,235,0.15);
+  box-shadow: 0 4px 12px rgba(29, 120, 184, 0.2);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-decoration: none;
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%);
-  box-shadow: 0 6px 16px rgba(37,99,235,0.25);
+  background: linear-gradient(135deg, #156299 0%, #084169 100%);
+  box-shadow: 0 6px 16px rgba(29, 120, 184, 0.3);
   transform: translateY(-1px);
 }
 .btn-primary:active {
@@ -128,18 +128,18 @@
 }
 
 .btn-danger {
-  background: #fef2f2;
-  color: #dc2626;
+  background: #fdf2f2;
+  color: #D31224;
   font-weight: 500;
   padding: 0.5rem 1rem;
   border-radius: 0.75rem;
-  border: 1px solid #fecaca;
+  border: 1px solid #fad3d5;
   cursor: pointer;
   transition: all 0.15s;
   display: inline-flex;
   align-items: center;
 }
-.btn-danger:hover { background: #fee2e2; }
+.btn-danger:hover { background: #fbe5e6; }
 .btn-danger:active { transform: scale(0.97); }
 
 /* Input */
