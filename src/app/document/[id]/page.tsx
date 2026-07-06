@@ -1,7 +1,5 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { formatFileSize, formatDate } from "@/utils/format";
 import { FileIcon } from "@/utils/fileIcon";
 import { Download, ExternalLink, Calendar, HardDrive, Eye, Tag, AlertCircle, FileText, ArrowLeft } from "lucide-react";
@@ -110,11 +108,8 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
-      <Navbar />
-      
-      <main className="flex-1 container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-7xl">
-        <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors mb-6">
+    <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-7xl">
+      <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors mb-6">
           <ArrowLeft className="w-4 h-4" /> Quay lại kho tài liệu
         </Link>
 
@@ -226,10 +221,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
               ))}
             </div>
           </div>
-        )}
-      </main>
-
-      <Footer />
+      )}
     </div>
   );
 }
