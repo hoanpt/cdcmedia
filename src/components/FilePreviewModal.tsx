@@ -25,7 +25,7 @@ export default function FilePreviewModal({ file, onClose }: Props) {
 
   if (!file) return null;
 
-  const isDrive = file.filepath?.startsWith("gdrive://");
+  const isDrive = file.filepath?.startsWith("gdrive://") || (file.filepath === "external" && !!file.driveWebLink);
   const downloadUrl = `/api/download/${file.id}`;
   const proxyUrl = `/api/download/${file.id}?preview=true`;
 
@@ -48,12 +48,6 @@ export default function FilePreviewModal({ file, onClose }: Props) {
   const driveEmbedUrl = driveFileId
     ? `https://drive.google.com/file/d/${driveFileId}/preview`
     : null;
-
-  // PDF: Drive → embed /preview, local → proxy inline
-  const pdfSrc = isDrive && driveEmbedUrl ? driveEmbedUrl : proxyUrl;
-
-  // Office Drive → embed /preview (Google tự convert), local → không preview được
-  const officeSrc = isDrive && driveEmbedUrl ? driveEmbedUrl : null;
 
   return (
     <AnimatePresence>
@@ -122,61 +116,65 @@ export default function FilePreviewModal({ file, onClose }: Props) {
 
           {/* Preview area */}
           <div className="flex-1 overflow-auto bg-slate-50/60 min-h-[180px]">
-            {isImage && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={proxyUrl}
-                alt={file.title}
-                className="w-full h-full object-contain"
-                style={{ maxHeight: "52vh" }}
-              />
-            )}
-            {isVideo && (
-              <video
-                src={proxyUrl}
-                controls
-                controlsList="nodownload"
-                playsInline
-                className="w-full bg-black"
-                style={{ maxHeight: "52vh" }}
-              />
-            )}
-            {isAudio && (
-              <div className="flex flex-col items-center justify-center gap-4 py-10 px-6">
-                <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
-                  <FileIcon mimeType={file.fileType} filename={file.filename} className="w-8 h-8" />
-                </div>
-                <audio src={proxyUrl} controls className="w-full max-w-sm" />
-              </div>
-            )}
-            {isPdf && (
+            {isDrive && driveEmbedUrl ? (
               <iframe
-                src={pdfSrc}
+                src={driveEmbedUrl}
                 className="w-full border-0"
-                style={{ height: "52vh" }}
+                style={{ height: "52vh", backgroundColor: "#000" }}
                 title={file.title}
+                allow="autoplay"
               />
-            )}
-            {isOffice && officeSrc && (
-              <iframe
-                src={officeSrc}
-                className="w-full border-0"
-                style={{ height: "52vh" }}
-                title={file.title}
-              />
-            )}
-            {isOffice && !officeSrc && (
-              <div className="flex flex-col items-center justify-center gap-3 py-12 text-slate-400">
-                <AlertCircle className="w-10 h-10" />
-                <p className="text-sm font-medium">File Office lưu trên máy chủ nội bộ</p>
-                <p className="text-xs">Tải xuống để mở bằng Microsoft Office</p>
-              </div>
-            )}
-            {!isImage && !isVideo && !isAudio && !isPdf && !isOffice && (
-              <div className="flex flex-col items-center justify-center gap-3 py-12 text-slate-400">
-                <FileText className="w-10 h-10" />
-                <p className="text-sm">Không hỗ trợ xem trước định dạng này</p>
-              </div>
+            ) : (
+              <>
+                {isImage && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={proxyUrl}
+                    alt={file.title}
+                    className="w-full h-full object-contain"
+                    style={{ maxHeight: "52vh" }}
+                  />
+                )}
+                {isVideo && (
+                  <video
+                    src={proxyUrl}
+                    controls
+                    controlsList="nodownload"
+                    playsInline
+                    className="w-full bg-black"
+                    style={{ maxHeight: "52vh" }}
+                  />
+                )}
+                {isAudio && (
+                  <div className="flex flex-col items-center justify-center gap-4 py-10 px-6">
+                    <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
+                      <FileIcon mimeType={file.fileType} filename={file.filename} className="w-8 h-8" />
+                    </div>
+                    <audio src={proxyUrl} controls className="w-full max-w-sm" />
+                  </div>
+                )}
+                {isPdf && (
+                  <iframe
+                    src={proxyUrl}
+                    className="w-full border-0"
+                    style={{ height: "52vh" }}
+                    title={file.title}
+                  />
+                )}
+                {isOffice && (
+                  <div className="flex flex-col items-center justify-center gap-3 py-12 text-slate-400">
+                    <AlertCircle className="w-10 h-10" />
+                    <p className="text-sm font-medium">File Office lưu trên máy chủ nội bộ</p>
+                    <p className="text-xs">Tải xuống để mở bằng Microsoft Office</p>
+                  </div>
+                )}
+                {!isImage && !isVideo && !isAudio && !isPdf && !isOffice && (
+                  <div className="flex flex-col items-center justify-center gap-3 py-12 text-slate-400">
+                    <FileText className="w-10 h-10" />
+                    <p className="text-sm">Không hỗ trợ xem trước định dạng này</p>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
