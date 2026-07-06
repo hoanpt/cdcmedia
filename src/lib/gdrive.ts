@@ -77,11 +77,15 @@ export async function uploadToDrive(
 
   const fileId = response.data.id!;
 
-  // Make public
-  await drive.permissions.create({
-    fileId,
-    requestBody: { role: "reader", type: "anyone" },
-  });
+  // Make public if possible (may fail due to Workspace policies)
+  try {
+    await drive.permissions.create({
+      fileId,
+      requestBody: { role: "reader", type: "anyone" },
+    });
+  } catch (e) {
+    console.warn(`Could not make drive file public (policy restriction): ${e}`);
+  }
 
   return {
     fileId,
