@@ -15,7 +15,7 @@ export default function DashboardClient({ categories, isAdmin }: Props) {
   const [refreshSignal, setRefreshSignal] = useState(0);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[360px,1fr] gap-6 items-start">
+    <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6 items-start">
       {/* Upload form — sticky on desktop */}
       <div className="lg:sticky lg:top-24">
         <UploadFileForm

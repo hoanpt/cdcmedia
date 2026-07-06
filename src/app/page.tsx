@@ -60,9 +60,9 @@ export default async function HomePage() {
         {/* Grid overlay */}
         <div className="absolute inset-0 bg-grid opacity-50 pointer-events-none" />
 
-        <div className="relative px-4 sm:px-8 py-6 sm:py-10">
+        <div className="relative px-4 sm:px-6 py-5 sm:py-6">
           {/* Authority badge */}
-          <div className="flex justify-center mb-5">
+          <div className="flex justify-center mb-3">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#1D78B8]/10 to-[#1D78B8]/5 border border-[#1D78B8]/20 text-[#1D78B8] text-xs sm:text-sm font-semibold">
               <Shield className="w-3.5 h-3.5" />
               <span className="w-1.5 h-1.5 rounded-full bg-[#D31224] animate-pulse" />
@@ -83,7 +83,7 @@ export default async function HomePage() {
           </div>
 
           {/* Stats grid */}
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mt-6">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mt-4">
             {stats.map((s) => (
               <div
                 key={s.label}
