@@ -52,6 +52,7 @@ model MediaFile {
   filepath      String
   driveFileId   String?
   driveWebLink  String?
+  thumbnailUrl  String?
   fileType      String
   fileSize      Int
   downloadCount Int            @default(0)

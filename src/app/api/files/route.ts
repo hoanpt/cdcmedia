@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { logActivity } from "@/lib/logger";
-import { isDriveConfigured, uploadToDrive } from "@/lib/gdrive";
+import { isDriveConfigured, uploadToDrive, extractDriveIdFromLink, getDriveFileMetadata } from "@/lib/gdrive";
 import { writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
@@ -99,12 +99,26 @@ export async function POST(req: NextRequest) {
     let fileType: string;
     let fileSize: number;
 
+    let thumbnailLink: string | null = null;
+
     if (googleDriveLink) {
       filepath = "external";
       driveWebLink = googleDriveLink;
       filename = `${title} (Google Drive)`;
       fileType = "link";
       fileSize = 0;
+
+      if (await isDriveConfigured()) {
+        const extractedId = extractDriveIdFromLink(googleDriveLink);
+        if (extractedId) {
+          const meta = await getDriveFileMetadata(extractedId);
+          fileSize = meta.size || 0;
+          fileType = meta.mimeType || "link";
+          if (meta.thumbnailLink) {
+            thumbnailLink = meta.thumbnailLink;
+          }
+        }
+      }
     } else if (file) {
       const buffer = Buffer.from(await file.arrayBuffer());
       const ext = path.extname(file.name) || "";
@@ -119,6 +133,12 @@ export async function POST(req: NextRequest) {
         filepath = `gdrive://${result.fileId}`;
         driveFileId = result.fileId;
         driveWebLink = result.webViewLink;
+        
+        // Try to fetch thumbnail immediately (might not be ready for videos, but works for images/pdfs)
+        const meta = await getDriveFileMetadata(result.fileId);
+        if (meta.thumbnailLink) {
+          thumbnailLink = meta.thumbnailLink;
+        }
       } else {
         if (!existsSync(UPLOADS_DIR)) await mkdir(UPLOADS_DIR, { recursive: true });
         await writeFile(path.join(UPLOADS_DIR, uniqueName), buffer);
@@ -152,6 +172,7 @@ export async function POST(req: NextRequest) {
         filepath,
         driveFileId,
         driveWebLink,
+        thumbnailUrl,
         fileType,
         fileSize,
         year: year ? parseInt(year) : new Date().getFullYear(),

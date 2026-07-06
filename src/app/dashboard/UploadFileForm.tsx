@@ -171,6 +171,7 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
             className="input-base"
             required={mode === "link"}
           />
+          <p className="text-xs text-slate-500 mt-2">Mẹo: Hệ thống sẽ tự động quét thông tin file (số MB, hình đại diện) nếu link của bạn đã được bật "Bất kỳ ai có đường liên kết đều có thể xem".</p>
         </div>
       )}
 

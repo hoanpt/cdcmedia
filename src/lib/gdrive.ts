@@ -122,3 +122,26 @@ export async function getDriveStorageInfo(): Promise<{ email: string; used: numb
     total: parseInt(res.data.storageQuota?.limit ?? "0"),
   };
 }
+
+export function extractDriveIdFromLink(url: string): string | null {
+  if (!url) return null;
+  // Match id=XXXX or /d/XXXX/
+  const idMatch = url.match(/(?:id=|v=|vi=|v\/|e\/|u\/\w\/|d\/|f\/|document\/d\/)([a-zA-Z0-9_-]{15,})/) || url.match(/([a-zA-Z0-9_-]{15,})/);
+  return idMatch ? idMatch[1] : null;
+}
+
+export async function getDriveFileMetadata(fileId: string): Promise<{ size: number, mimeType: string, thumbnailLink?: string, name?: string }> {
+  try {
+    const { drive } = await getDriveClient();
+    const meta = await drive.files.get({ fileId, fields: "size, mimeType, thumbnailLink, name" });
+    return {
+      size: meta.data.size ? parseInt(meta.data.size) : 0,
+      mimeType: meta.data.mimeType ?? "application/octet-stream",
+      thumbnailLink: meta.data.thumbnailLink ?? undefined,
+      name: meta.data.name ?? undefined,
+    };
+  } catch (e) {
+    console.warn(`Could not fetch metadata for drive link ${fileId}`, e);
+    return { size: 0, mimeType: "link" };
+  }
+}

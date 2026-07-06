@@ -283,8 +283,21 @@ export default function PublicFileList({ files, categories }: Props) {
               >
                 {/* Icon + title */}
                 <div className="flex items-start gap-3">
-                  <div className="p-2.5 rounded-2xl bg-blue-50/50 shrink-0 text-blue-600">
-                    <FileIcon mimeType={file.fileType} filename={file.filename} className="w-6 h-6" />
+                  <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden relative border border-slate-200/50">
+                    {(file.thumbnailUrl || (file.fileType.startsWith("image/") && file.filepath !== "external")) ? (
+                      <img 
+                        src={`/api/thumbnail/${file.id}`} 
+                        alt="thumbnail" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    <div className={`flex items-center justify-center w-full h-full text-blue-600 bg-blue-50/50 ${(file.thumbnailUrl || (file.fileType.startsWith("image/") && file.filepath !== "external")) ? 'hidden' : ''}`}>
+                      <FileIcon mimeType={file.fileType} filename={file.filename} className="w-7 h-7" />
+                    </div>
                   </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="font-semibold text-slate-800 text-sm leading-snug line-clamp-2 hover:text-blue-600 transition-colors">
