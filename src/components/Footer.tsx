@@ -16,7 +16,7 @@ export default function Footer() {
           <div className="sm:col-span-1 space-y-3">
             <div className="flex items-center gap-3">
               <div className="relative w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm border border-slate-100 overflow-hidden">
-                <img src="/api/uploads/logo.png" alt="CDC Đà Nẵng Logo" className="w-full h-full object-contain p-0.5" onError={(e) => { const target = e.currentTarget as HTMLImageElement; if (target.src.includes('/api/uploads/logo.png')) { target.src = '/logo.png'; } else { target.style.display = 'none'; target.nextElementSibling?.classList.remove('hidden'); } }} />
+                <img src="/api/uploads/logo.png" alt="CDC Đà Nẵng Logo" className="w-full h-full object-contain scale-110" onError={(e) => { const target = e.currentTarget as HTMLImageElement; if (target.src.includes('/api/uploads/logo.png')) { target.src = '/logo.png'; } else { target.style.display = 'none'; target.nextElementSibling?.classList.remove('hidden'); } }} />
                 <span className="hidden font-extrabold text-blue-600 text-[10px]">CDC</span>
               </div>
               <div className="flex flex-col leading-none">
