@@ -41,8 +41,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         
         {/* Banner ngang TOP — dưới Navbar, được ghim cố định */}
         <div className="w-full sticky top-14 sm:top-16 z-40 bg-[#f8fafc] border-b border-slate-200/50 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 sm:py-3 w-full">
-            <BannerStrip position="TOP" className="w-full overflow-hidden rounded-xl" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-2 sm:pb-3 pt-0 w-full">
+            <BannerStrip position="TOP" className="w-full overflow-hidden" />
           </div>
         </div>
         

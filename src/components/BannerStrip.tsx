@@ -48,15 +48,23 @@ export default function BannerStrip({ position, className = "" }: Props) {
   const banner = banners[current];
 
   const inner = (
-    <div className="relative w-full overflow-hidden group rounded-2xl border border-slate-100 shadow-sm bg-slate-50">
-      {/* Ảnh banner tự động dàn ngang, chiều cao được giới hạn khoảng 2/3 so với tỷ lệ gốc để cân đối hơn */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={banner.imageUrl}
-        alt={banner.title}
-        className="w-full h-[100px] sm:h-[130px] md:h-[170px] lg:h-[220px] xl:h-[250px] object-cover bg-white transition-opacity duration-500"
-        style={{ display: "block" }}
-      />
+    <div className="relative w-full overflow-hidden group rounded-b-2xl border-b border-x border-slate-200 shadow-sm bg-slate-50">
+      <div 
+        className="flex transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]" 
+        style={{ transform: `translateX(-${current * 100}%)` }}
+      >
+        {banners.map((b) => (
+          <div key={b.id} className="w-full shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={b.imageUrl}
+              alt={b.title}
+              className="w-full h-[100px] sm:h-[130px] md:h-[170px] lg:h-[220px] xl:h-[250px] object-cover bg-white"
+              style={{ display: "block" }}
+            />
+          </div>
+        ))}
+      </div>
 
       {/* Nút prev/next nếu nhiều banner */}
       {banners.length > 1 && (
