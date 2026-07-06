@@ -1,6 +1,6 @@
 // src/app/layout.tsx — root layout
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import Navbar from "@/components/Navbar";
@@ -9,10 +9,10 @@ import BannerStrip from "@/components/BannerStrip";
 import PopupAd from "@/components/PopupAd";
 import { getSession } from "@/lib/auth";
 
-const outfit = Outfit({
-  subsets: ["latin", "latin-ext"], // Thêm "latin-ext" để sửa lỗi font tiếng Việt
+const inter = Inter({
+  subsets: ["latin", "vietnamese"], // Hỗ trợ tiếng Việt hoàn chỉnh
   weight: ["300", "400", "500", "600", "700", "800"],
-  variable: "--font-outfit",
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -28,7 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const session = await getSession();
 
   return (
-    <html lang="vi" className={outfit.variable}>
+    <html lang="vi" className={inter.variable}>
       <body className="gradient-bg bg-grid min-h-screen flex flex-col">
         <Toaster
           position="top-right"

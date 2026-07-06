@@ -6,7 +6,7 @@
     scroll-behavior: smooth;
   }
   body {
-    font-family: var(--font-outfit), sans-serif;
+    font-family: var(--font-inter), sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     color: #1e293b;
