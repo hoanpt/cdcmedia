@@ -7,7 +7,6 @@ import { isDriveConfigured, uploadToDrive, extractDriveIdFromLink, getDriveFileM
 import { writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
-// Use built-in crypto — no uuid dep needed
 
 const MAX_SIZE = 500 * 1024 * 1024; // 500 MB
 const UPLOADS_DIR = path.join(process.cwd(), "uploads");
@@ -48,6 +47,7 @@ export async function GET(req: NextRequest) {
         category: { select: { id: true, name: true, color: true, icon: true } },
         uploader: { select: { id: true, username: true, displayName: true } },
         tags: { include: { tag: { select: { id: true, name: true } } } },
+        attachments: true,
       },
       orderBy: { createdAt: "desc" },
       skip,
@@ -59,6 +59,43 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ files, total, page, limit });
 }
 
+async function processFile(file: File) {
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const ext = path.extname(file.name) || "";
+  const uniqueName = `${crypto.randomUUID()}${ext}`;
+
+  let filepath = "";
+  let driveFileId = undefined;
+  let driveWebLink = undefined;
+  let thumbnailUrl = undefined;
+
+  if (await isDriveConfigured()) {
+    const result = await uploadToDrive(buffer, file.name, file.type);
+    filepath = `gdrive://${result.fileId}`;
+    driveFileId = result.fileId;
+    driveWebLink = result.webViewLink;
+    
+    const meta = await getDriveFileMetadata(result.fileId);
+    if (meta.thumbnailLink) {
+      thumbnailUrl = meta.thumbnailLink;
+    }
+  } else {
+    if (!existsSync(UPLOADS_DIR)) await mkdir(UPLOADS_DIR, { recursive: true });
+    await writeFile(path.join(UPLOADS_DIR, uniqueName), buffer);
+    filepath = uniqueName;
+  }
+
+  return {
+    filename: file.name,
+    fileType: file.type || "application/octet-stream",
+    fileSize: file.size,
+    filepath,
+    driveFileId,
+    driveWebLink,
+    thumbnailUrl
+  };
+}
+
 // POST /api/files — upload (auth required, UPLOADER or ADMIN)
 export async function POST(req: NextRequest) {
   const session = await getSession();
@@ -66,7 +103,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-    const file = formData.get("file") as File | null;
+    const files = formData.getAll("file") as File[];
     const googleDriveLink = formData.get("googleDriveLink") as string | null;
     const title = formData.get("title") as string;
     const description = formData.get("description") as string | null;
@@ -74,39 +111,25 @@ export async function POST(req: NextRequest) {
     const tagsRaw = formData.get("tags") as string | null;
     const year = formData.get("year") as string | null;
 
-    if ((!file && !googleDriveLink) || !title || !categoryId) {
+    if ((files.length === 0 && !googleDriveLink) || !title || !categoryId) {
       return NextResponse.json({ error: "Thiếu thông tin bắt buộc" }, { status: 400 });
     }
 
-    if (file && file.size > MAX_SIZE) {
-      return NextResponse.json({ error: "File vượt quá 500 MB" }, { status: 413 });
+    for (const f of files) {
+      if (f.size > MAX_SIZE) return NextResponse.json({ error: "Một trong các file vượt quá 500 MB" }, { status: 413 });
     }
 
     const category = await prisma.category.findUnique({ where: { id: categoryId } });
-    if (!category) {
-      return NextResponse.json({ error: "Chuyên mục không tồn tại" }, { status: 400 });
-    }
+    if (!category) return NextResponse.json({ error: "Chuyên mục không tồn tại" }, { status: 400 });
 
-    const uploader = await prisma.user.findUnique({ where: { id: session.userId } });
-    if (!uploader) {
-      return NextResponse.json({ error: "Tài khoản của bạn không tồn tại (phiên đăng nhập hết hạn)" }, { status: 401 });
-    }
-
-    let filepath: string;
-    let driveFileId: string | undefined;
-    let driveWebLink: string | undefined;
-    let filename: string;
-    let fileType: string;
-    let fileSize: number;
-
-    let thumbnailUrl: string | null = null;
+    let mainFileData: any = null;
+    const attachmentsData: any[] = [];
 
     if (googleDriveLink) {
-      filepath = "external";
-      driveWebLink = googleDriveLink;
-      filename = `${title} (Google Drive)`;
-      fileType = "link";
-      fileSize = 0;
+      let fileSize = 0;
+      let fileType = "link";
+      let thumbnailUrl = null;
+      let driveFileId = undefined;
 
       if (await isDriveConfigured()) {
         const extractedId = extractDriveIdFromLink(googleDriveLink);
@@ -114,45 +137,34 @@ export async function POST(req: NextRequest) {
           const meta = await getDriveFileMetadata(extractedId);
           fileSize = meta.size || 0;
           fileType = meta.mimeType || "link";
-          if (meta.thumbnailLink) {
-            thumbnailUrl = meta.thumbnailLink;
-          }
+          driveFileId = extractedId;
+          if (meta.thumbnailLink) thumbnailUrl = meta.thumbnailLink;
         }
       }
-    } else if (file) {
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const ext = path.extname(file.name) || "";
-      const uniqueName = `${crypto.randomUUID()}${ext}`;
-
-      filename = file.name;
-      fileType = file.type || "application/octet-stream";
-      fileSize = file.size;
-
-      if (await isDriveConfigured()) {
-        const result = await uploadToDrive(buffer, file.name, file.type);
-        filepath = `gdrive://${result.fileId}`;
-        driveFileId = result.fileId;
-        driveWebLink = result.webViewLink;
-        
-        // Try to fetch thumbnail immediately (might not be ready for videos, but works for images/pdfs)
-        const meta = await getDriveFileMetadata(result.fileId);
-        if (meta.thumbnailLink) {
-          thumbnailUrl = meta.thumbnailLink;
-        }
-      } else {
-        if (!existsSync(UPLOADS_DIR)) await mkdir(UPLOADS_DIR, { recursive: true });
-        await writeFile(path.join(UPLOADS_DIR, uniqueName), buffer);
-        filepath = uniqueName;
+      
+      mainFileData = {
+        filename: `${title} (Google Drive)`,
+        fileType,
+        fileSize,
+        filepath: "external",
+        driveWebLink: googleDriveLink,
+        driveFileId,
+        thumbnailUrl
+      };
+    } else if (files.length > 0) {
+      // Process first file as main
+      mainFileData = await processFile(files[0]);
+      
+      // Process rest as attachments
+      for (let i = 1; i < files.length; i++) {
+        attachmentsData.push(await processFile(files[i]));
       }
     } else {
       return NextResponse.json({ error: "Thiếu file hoặc link" }, { status: 400 });
     }
 
     // Parse tags
-    const tagNames: string[] = tagsRaw
-      ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean)
-      : [];
-
+    const tagNames: string[] = tagsRaw ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean) : [];
     const tagConnects = await Promise.all(
       tagNames.map((name) =>
         prisma.tag.upsert({
@@ -168,29 +180,35 @@ export async function POST(req: NextRequest) {
       data: {
         title,
         description: description || null,
-        filename,
-        filepath,
-        driveFileId,
-        driveWebLink,
-        thumbnailUrl,
-        fileType,
-        fileSize,
         year: year ? parseInt(year) : new Date().getFullYear(),
         categoryId,
         uploaderId: session.userId,
         tags: { create: tagConnects.map((t: any) => ({ tagId: t.id })) },
+        ...mainFileData,
+        attachments: {
+          create: attachmentsData.map(att => ({
+            filename: att.filename,
+            filepath: att.filepath,
+            driveFileId: att.driveFileId,
+            driveWebLink: att.driveWebLink,
+            thumbnailUrl: att.thumbnailUrl,
+            fileType: att.fileType,
+            fileSize: att.fileSize,
+          }))
+        }
       },
       include: {
         category: { select: { id: true, name: true, color: true, icon: true } },
         uploader: { select: { id: true, username: true, displayName: true } },
         tags: { include: { tag: true } },
+        attachments: true
       },
     });
 
     await logActivity(
       session.userId,
       "UPLOAD",
-      `Tải lên: "${title}" (${(fileSize / 1024 / 1024).toFixed(2)} MB)`,
+      `Tải lên: "${title}" (${files.length} file)`,
       req.headers.get("x-forwarded-for") ?? undefined
     );
 

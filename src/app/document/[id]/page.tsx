@@ -4,6 +4,7 @@ import { formatFileSize, formatDate } from "@/utils/format";
 import { FileIcon } from "@/utils/fileIcon";
 import { Download, ExternalLink, Calendar, HardDrive, Eye, Tag, AlertCircle, FileText, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import AlbumViewer from "./AlbumViewer";
 import type { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -21,7 +22,8 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
     include: {
       category: true,
       uploader: { select: { id: true, username: true, displayName: true } },
-      tags: { include: { tag: true } }
+      tags: { include: { tag: true } },
+      attachments: true
     }
   });
 
@@ -43,69 +45,8 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
   });
 
   const downloadUrl = `/api/download/${file.id}`;
-  const proxyUrl = `/api/download/${file.id}?preview=true`;
-  const isDrive = file.filepath?.startsWith("gdrive://") || (file.filepath === "external" && !!file.driveWebLink);
-  const isImage = file.fileType.startsWith("image/");
-  const isVideo = file.fileType.startsWith("video/");
-  const isAudio = file.fileType.startsWith("audio/");
-  const isPdf = file.fileType === "application/pdf";
-  const isOffice =
-    file.fileType.includes("word") ||
-    file.fileType.includes("sheet") ||
-    file.fileType.includes("presentation") ||
-    file.fileType.includes("excel") ||
-    file.fileType.includes("powerpoint");
 
-  const driveFileId = file.driveFileId ?? file.driveWebLink?.match(/\/file\/d\/([^/]+)/)?.[1] ?? null;
-  const driveEmbedUrl = driveFileId ? `https://drive.google.com/file/d/${driveFileId}/preview` : null;
-
-  const renderPreview = () => {
-    if (isDrive && driveEmbedUrl && (isOffice || file.filepath === "external")) {
-      return (
-        <iframe
-          src={driveEmbedUrl}
-          className="w-full h-full border-0 absolute inset-0"
-          title={file.title}
-          allow="autoplay"
-        />
-      );
-    }
-    if (isImage) {
-      // eslint-disable-next-line @next/next/no-img-element
-      return <img src={proxyUrl} alt={file.title} className="w-full h-full object-contain bg-slate-900/5 absolute inset-0" />;
-    }
-    if (isVideo) {
-      return <video src={proxyUrl} controls controlsList="nodownload" playsInline className="w-full h-full bg-black object-contain absolute inset-0" />;
-    }
-    if (isAudio) {
-      return (
-        <div className="flex flex-col items-center justify-center gap-4 py-10 px-6 h-full bg-slate-50 absolute inset-0">
-          <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center shadow-inner">
-            <FileIcon mimeType={file.fileType} filename={file.filename} className="w-12 h-12" />
-          </div>
-          <audio src={proxyUrl} controls className="w-full max-w-md mt-6" />
-        </div>
-      );
-    }
-    if (isPdf) {
-      return <iframe src={proxyUrl} className="w-full h-full border-0 absolute inset-0" title={file.title} />;
-    }
-    if (isOffice) {
-      return (
-        <div className="flex flex-col items-center justify-center gap-3 py-16 text-slate-400 bg-slate-50 h-full absolute inset-0">
-          <AlertCircle className="w-16 h-16 text-amber-500/50" />
-          <p className="text-base font-medium text-slate-600">File Office lưu trên máy chủ</p>
-          <p className="text-sm">Tải xuống để mở bằng Microsoft Office</p>
-        </div>
-      );
-    }
-    return (
-      <div className="flex flex-col items-center justify-center gap-3 py-16 text-slate-400 bg-slate-50 h-full absolute inset-0">
-        <FileText className="w-16 h-16" />
-        <p className="text-base">Không hỗ trợ xem trước định dạng này</p>
-      </div>
-    );
-  };
+  const allItems = [file, ...file.attachments];
 
   return (
     <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-7xl">
@@ -117,7 +58,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
           <div className="flex flex-col lg:flex-row min-h-[500px]">
             {/* Left Column: Preview */}
             <div className="lg:w-2/3 xl:w-3/4 border-b lg:border-b-0 lg:border-r border-slate-200 bg-slate-100/50 relative flex flex-col min-h-[350px] lg:min-h-full">
-              {renderPreview()}
+              <AlbumViewer items={allItems} />
             </div>
 
             {/* Right Column: Info & Actions */}

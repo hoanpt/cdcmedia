@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function UploadFileForm({ categories, onUploaded }: Props) {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [googleDriveLink, setGoogleDriveLink] = useState("");
   const [mode, setMode] = useState<"file" | "link">("file");
   const [title, setTitle] = useState("");
@@ -28,20 +28,20 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
 
   // Auto-fill title from filename
   useEffect(() => {
-    if (file && !title) {
-      setTitle(file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "));
+    if (files.length > 0 && !title) {
+      setTitle(files[0].name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "));
     }
-  }, [file, title]);
+  }, [files, title]);
 
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
-    const dropped = e.dataTransfer.files[0];
-    if (dropped) setFile(dropped);
+    const dropped = Array.from(e.dataTransfer.files);
+    if (dropped.length > 0) setFiles((prev) => [...prev, ...dropped]);
   }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (mode === "file" && !file) return;
+    if (mode === "file" && files.length === 0) return;
     if (mode === "link" && !googleDriveLink) return;
     if (!title || !categoryId) return;
 
@@ -49,7 +49,9 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
     setProgress(0);
 
     const fd = new FormData();
-    if (mode === "file" && file) fd.append("file", file);
+    if (mode === "file") {
+      files.forEach(f => fd.append("file", f));
+    }
     if (mode === "link" && googleDriveLink) fd.append("googleDriveLink", googleDriveLink);
     fd.append("title", title);
     fd.append("description", description);
@@ -68,7 +70,7 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
       setUploading(false);
       if (xhr.status === 201) {
         toast.success("Tải lên thành công!");
-        setFile(null);
+        setFiles([]);
         setGoogleDriveLink("");
         setTitle("");
         setDescription("");
@@ -132,32 +134,31 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
                    flex flex-col items-center gap-2 cursor-pointer transition-colors text-center
                    bg-slate-50/50 hover:bg-blue-50/30"
       >
-        {file ? (
-          <>
-            <FileText className="w-8 h-8 text-blue-500" />
-            <p className="font-semibold text-slate-700 text-sm">{file.name}</p>
-            <p className="text-xs text-slate-400">{formatFileSize(file.size)}</p>
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); setFile(null); setTitle(""); }}
-              className="text-xs text-red-500 hover:underline flex items-center gap-1"
-            >
-              <X className="w-3 h-3" /> Xóa
-            </button>
-          </>
+        {files.length > 0 ? (
+          <div className="text-center w-full">
+            <FileText className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+            <p className="font-semibold text-slate-700">{files.length} file đã chọn</p>
+            <div className="mt-2 text-xs text-slate-500 max-h-24 overflow-y-auto space-y-1 text-left px-4">
+              {files.map((f, i) => (
+                <div key={i} className="truncate">• {f.name} ({formatFileSize(f.size)})</div>
+              ))}
+            </div>
+            <p className="text-xs text-blue-600 mt-2">Bấm để chọn lại</p>
+          </div>
         ) : (
           <>
             <Upload className="w-8 h-8 text-slate-300" />
             <p className="text-sm text-slate-500">Kéo thả file hoặc <span className="text-blue-600 font-semibold">chọn file</span></p>
-            <p className="text-xs text-slate-400">Tối đa 500 MB</p>
+            <p className="text-xs text-slate-400">Tối đa 500 MB / file</p>
           </>
         )}
         <input
           ref={inputRef}
           type="file"
+          multiple
           className="hidden"
           accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.webp,.mp4,.avi,.mkv,.mp3,.wav,.zip,.rar"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
         />
       </div>
       ) : (
@@ -304,7 +305,7 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
       )}
 
       {!uploading && (
-        <button type="submit" disabled={(mode === "file" && !file) || (mode === "link" && !googleDriveLink) || !title || !categoryId} className="btn-primary w-full py-3 flex items-center justify-center gap-2">
+        <button type="submit" disabled={(mode === "file" && files.length === 0) || (mode === "link" && !googleDriveLink) || !title || !categoryId} className="btn-primary w-full py-3 flex items-center justify-center gap-2">
           <Upload className="w-4 h-4" /> Tải lên
         </button>
       )}
