@@ -35,19 +35,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           toastOptions={{
             className: "!rounded-2xl !shadow-lg !font-medium",
             duration: 3000,
-          }}
         />
-            <Navbar session={session} />
+        <Navbar session={session} />
         
-        {/* Banner ngang TOP — dưới Navbar */}
-        <div className="w-full">
-          <BannerStrip position="TOP" className="w-full overflow-hidden" />
+        {/* Banner ngang TOP — dưới Navbar, được ghim cố định */}
+        <div className="w-full sticky top-14 sm:top-16 z-40 bg-[#f8fafc] border-b border-slate-200/50 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 sm:py-3 w-full">
+            <BannerStrip position="TOP" className="w-full overflow-hidden rounded-xl" />
+          </div>
         </div>
         
         <main className="flex-1">{children}</main>
         
         {/* Banner ngang BOTTOM — trên Footer */}
-        <div className="w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full my-4">
           <BannerStrip position="BOTTOM" className="w-full overflow-hidden" />
         </div>
         

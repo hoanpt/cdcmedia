@@ -49,12 +49,12 @@ export default function BannerStrip({ position, className = "" }: Props) {
 
   const inner = (
     <div className="relative w-full overflow-hidden group rounded-2xl border border-slate-100 shadow-sm bg-slate-50">
-      {/* Ảnh banner tự động co giãn theo tỉ lệ gốc, không bao giờ bị cắt chữ */}
+      {/* Ảnh banner tự động dàn ngang toàn bộ, tỷ lệ gốc sẽ làm chiều cao tự động */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={banner.imageUrl}
         alt={banner.title}
-        className="w-full h-auto object-contain bg-white transition-opacity duration-500 max-h-32 sm:max-h-36 md:max-h-40 lg:max-h-48"
+        className="w-full h-auto object-cover bg-white transition-opacity duration-500"
         style={{ display: "block" }}
       />
 

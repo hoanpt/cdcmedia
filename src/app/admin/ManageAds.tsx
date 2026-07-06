@@ -371,7 +371,7 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
 ];
 
 function LogoManager() {
-  const [logoUrl, setLogoUrl] = useState("/logo.png");
+  const [logoUrl, setLogoUrl] = useState("/api/uploads/logo.png");
   
   return (
     <div className="space-y-4">
@@ -381,7 +381,7 @@ function LogoManager() {
         <div className="flex flex-col sm:flex-row gap-6 items-start">
           <div className="w-24 h-24 shrink-0 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center p-2 relative overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" onError={e => e.currentTarget.style.display = "none"} />
+            <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" onError={e => { const target = e.currentTarget as HTMLImageElement; if (target.src.includes('/api/uploads/logo.png')) { target.src = '/Logo.png'; } else { target.style.display = 'none'; } }} />
           </div>
           <div className="flex-1 space-y-2 min-w-0 w-full">
             <Field label="Tải lên hình ảnh mới">

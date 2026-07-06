@@ -23,9 +23,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Ảnh tối đa 5MB" }, { status: 400 });
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const logoPath = path.join(process.cwd(), "public", "logo.png");
+  const uploadsDir = path.join(process.cwd(), "uploads");
+  try { await import("fs/promises").then(fs => fs.mkdir(uploadsDir, { recursive: true })); } catch (e) {}
+  const logoPath = path.join(uploadsDir, "logo.png");
 
   await writeFile(logoPath, buffer);
 
-  return NextResponse.json({ ok: true, url: `/logo.png?v=${Date.now()}` }, { status: 201 });
+  return NextResponse.json({ ok: true, url: `/api/uploads/logo.png?v=${Date.now()}` }, { status: 201 });
 }
