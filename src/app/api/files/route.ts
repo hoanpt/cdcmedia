@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
     let fileType: string;
     let fileSize: number;
 
-    let thumbnailLink: string | null = null;
+    let thumbnailUrl: string | null = null;
 
     if (googleDriveLink) {
       filepath = "external";
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
           fileSize = meta.size || 0;
           fileType = meta.mimeType || "link";
           if (meta.thumbnailLink) {
-            thumbnailLink = meta.thumbnailLink;
+            thumbnailUrl = meta.thumbnailLink;
           }
         }
       }
@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
         // Try to fetch thumbnail immediately (might not be ready for videos, but works for images/pdfs)
         const meta = await getDriveFileMetadata(result.fileId);
         if (meta.thumbnailLink) {
-          thumbnailLink = meta.thumbnailLink;
+          thumbnailUrl = meta.thumbnailLink;
         }
       } else {
         if (!existsSync(UPLOADS_DIR)) await mkdir(UPLOADS_DIR, { recursive: true });
