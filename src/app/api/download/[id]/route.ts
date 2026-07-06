@@ -41,6 +41,11 @@ export async function GET(req: NextRequest, { params }: Params) {
 
   const watermarkable = isWatermarkable(file.fileType);
 
+  // ─── External Link (e.g. Google Drive Link) ─────────────────────
+  if (file.filepath === "external" && file.driveWebLink) {
+    return NextResponse.redirect(file.driveWebLink);
+  }
+
   // ─── Google Drive ───────────────────────────────────────────────
   if (file.filepath.startsWith("gdrive://")) {
     try {

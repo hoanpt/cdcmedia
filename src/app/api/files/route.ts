@@ -67,17 +67,18 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
+    const googleDriveLink = formData.get("googleDriveLink") as string | null;
     const title = formData.get("title") as string;
     const description = formData.get("description") as string | null;
     const categoryId = formData.get("categoryId") as string;
     const tagsRaw = formData.get("tags") as string | null;
     const year = formData.get("year") as string | null;
 
-    if (!file || !title || !categoryId) {
+    if ((!file && !googleDriveLink) || !title || !categoryId) {
       return NextResponse.json({ error: "Thiếu thông tin bắt buộc" }, { status: 400 });
     }
 
-    if (file.size > MAX_SIZE) {
+    if (file && file.size > MAX_SIZE) {
       return NextResponse.json({ error: "File vượt quá 500 MB" }, { status: 413 });
     }
 
@@ -91,23 +92,40 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Tài khoản của bạn không tồn tại (phiên đăng nhập hết hạn)" }, { status: 401 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const ext = path.extname(file.name) || "";
-    const uniqueName = `${crypto.randomUUID()}${ext}`;
-
     let filepath: string;
     let driveFileId: string | undefined;
     let driveWebLink: string | undefined;
+    let filename: string;
+    let fileType: string;
+    let fileSize: number;
 
-    if (await isDriveConfigured()) {
-      const result = await uploadToDrive(buffer, file.name, file.type);
-      filepath = `gdrive://${result.fileId}`;
-      driveFileId = result.fileId;
-      driveWebLink = result.webViewLink;
+    if (googleDriveLink) {
+      filepath = "external";
+      driveWebLink = googleDriveLink;
+      filename = `${title} (Google Drive)`;
+      fileType = "link";
+      fileSize = 0;
+    } else if (file) {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const ext = path.extname(file.name) || "";
+      const uniqueName = `${crypto.randomUUID()}${ext}`;
+
+      filename = file.name;
+      fileType = file.type || "application/octet-stream";
+      fileSize = file.size;
+
+      if (await isDriveConfigured()) {
+        const result = await uploadToDrive(buffer, file.name, file.type);
+        filepath = `gdrive://${result.fileId}`;
+        driveFileId = result.fileId;
+        driveWebLink = result.webViewLink;
+      } else {
+        if (!existsSync(UPLOADS_DIR)) await mkdir(UPLOADS_DIR, { recursive: true });
+        await writeFile(path.join(UPLOADS_DIR, uniqueName), buffer);
+        filepath = uniqueName;
+      }
     } else {
-      if (!existsSync(UPLOADS_DIR)) await mkdir(UPLOADS_DIR, { recursive: true });
-      await writeFile(path.join(UPLOADS_DIR, uniqueName), buffer);
-      filepath = uniqueName;
+      return NextResponse.json({ error: "Thiếu file hoặc link" }, { status: 400 });
     }
 
     // Parse tags
@@ -130,12 +148,12 @@ export async function POST(req: NextRequest) {
       data: {
         title,
         description: description || null,
-        filename: file.name,
+        filename,
         filepath,
         driveFileId,
         driveWebLink,
-        fileType: file.type || "application/octet-stream",
-        fileSize: file.size,
+        fileType,
+        fileSize,
         year: year ? parseInt(year) : new Date().getFullYear(),
         categoryId,
         uploaderId: session.userId,

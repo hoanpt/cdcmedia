@@ -14,6 +14,8 @@ interface Props {
 
 export default function UploadFileForm({ categories, onUploaded }: Props) {
   const [file, setFile] = useState<File | null>(null);
+  const [googleDriveLink, setGoogleDriveLink] = useState("");
+  const [mode, setMode] = useState<"file" | "link">("file");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
@@ -39,13 +41,16 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!file || !title || !categoryId) return;
+    if (mode === "file" && !file) return;
+    if (mode === "link" && !googleDriveLink) return;
+    if (!title || !categoryId) return;
 
     setUploading(true);
     setProgress(0);
 
     const fd = new FormData();
-    fd.append("file", file);
+    if (mode === "file" && file) fd.append("file", file);
+    if (mode === "link" && googleDriveLink) fd.append("googleDriveLink", googleDriveLink);
     fd.append("title", title);
     fd.append("description", description);
     fd.append("categoryId", categoryId);
@@ -64,6 +69,7 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
       if (xhr.status === 201) {
         toast.success("Tải lên thành công!");
         setFile(null);
+        setGoogleDriveLink("");
         setTitle("");
         setDescription("");
         setTags("");
@@ -92,11 +98,32 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="card space-y-4">
-      <h2 className="font-bold text-slate-800 text-lg flex items-center gap-2">
-        <Upload className="w-5 h-5 text-blue-600" /> Tải lên tài liệu
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+          <Upload className="w-5 h-5 text-blue-600" /> Tải lên tài liệu
+        </h2>
+        
+        {/* Toggle Mode */}
+        <div className="flex bg-slate-100 p-1 rounded-xl">
+          <button
+            type="button"
+            onClick={() => setMode("file")}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${mode === "file" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+          >
+            Từ Máy tính
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("link")}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${mode === "link" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+          >
+            Link Google Drive
+          </button>
+        </div>
+      </div>
 
-      {/* Drop zone */}
+      {/* Upload Zone or Link Input */}
+      {mode === "file" ? (
       <div
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}
@@ -133,6 +160,19 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
         />
       </div>
+      ) : (
+        <div>
+          <label className="block text-xs font-semibold text-slate-600 mb-1">Đường dẫn Google Drive *</label>
+          <input
+            type="url"
+            value={googleDriveLink}
+            onChange={(e) => setGoogleDriveLink(e.target.value)}
+            placeholder="Dán link Google Drive (ví dụ: https://drive.google.com/file/d/...)"
+            className="input-base"
+            required={mode === "link"}
+          />
+        </div>
+      )}
 
       {/* Title */}
       <div>
@@ -263,7 +303,7 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
       )}
 
       {!uploading && (
-        <button type="submit" disabled={!file || !title || !categoryId} className="btn-primary w-full py-3 flex items-center justify-center gap-2">
+        <button type="submit" disabled={(mode === "file" && !file) || (mode === "link" && !googleDriveLink) || !title || !categoryId} className="btn-primary w-full py-3 flex items-center justify-center gap-2">
           <Upload className="w-4 h-4" /> Tải lên
         </button>
       )}
