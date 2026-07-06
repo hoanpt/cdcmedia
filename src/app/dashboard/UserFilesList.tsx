@@ -5,7 +5,7 @@ import { Pencil, Trash2, Eye, Download, X, Check, RefreshCw } from "lucide-react
 import toast from "react-hot-toast";
 import { formatFileSize, formatDate } from "@/utils/format";
 import { FileIcon } from "@/utils/fileIcon";
-import FilePreviewModal from "@/components/FilePreviewModal";
+import Link from "next/link";
 import EditFileModal from "./EditFileModal";
 import type { FileWithRelations } from "@/types";
 
@@ -20,7 +20,6 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
   const [files, setFiles] = useState<FileWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingFile, setEditingFile] = useState<FileWithRelations | null>(null);
-  const [previewFile, setPreviewFile] = useState<FileWithRelations | null>(null);
 
   const fetchFiles = useCallback(async () => {
     setLoading(true);
@@ -115,9 +114,9 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <button onClick={() => setPreviewFile(file)} className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition">
+                    <Link href={`/document/${file.id}`} className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition">
                       <Eye className="w-4 h-4" />
-                    </button>
+                    </Link>
                     <a href={`/api/download/${file.id}`} download className="p-1.5 rounded-lg hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 transition">
                       <Download className="w-4 h-4" />
                     </a>
@@ -134,7 +133,7 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
         </div>
       </div>
 
-      <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} onSelectFile={setPreviewFile} />
+
       {editingFile && (
         <EditFileModal
           file={editingFile}

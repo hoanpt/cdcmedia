@@ -2,7 +2,7 @@
 "use client";
 import { useState, useCallback, useMemo } from "react";
 import { Search, Filter, Download, Eye, SlidersHorizontal, Tag, X } from "lucide-react";
-import FilePreviewModal from "./FilePreviewModal";
+import Link from "next/link";
 import { FileIcon, getFileCategoryLabel } from "@/utils/fileIcon";
 import { formatFileSize, formatDate } from "@/utils/format";
 import type { CategoryWithCount, FileWithRelations } from "@/types";
@@ -27,8 +27,8 @@ export default function PublicFileList({ files, categories }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedTag, setSelectedTag] = useState("");
-  const [previewFile, setPreviewFile] = useState<FileWithRelations | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
   // Collect all tags from files
@@ -344,12 +344,12 @@ export default function PublicFileList({ files, categories }: Props) {
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-1">
-                  <button
-                    onClick={() => setPreviewFile(file)}
+                  <Link
+                    href={`/document/${file.id}`}
                     className="btn-secondary flex-1 flex items-center justify-center gap-1.5 text-xs py-2 h-9"
                   >
-                    <Eye className="w-3.5 h-3.5" /> Xem trước
-                  </button>
+                    <Eye className="w-3.5 h-3.5" /> Chi tiết
+                  </Link>
                   <a
                     href={`/api/download/${file.id}`}
                     download
@@ -363,9 +363,6 @@ export default function PublicFileList({ files, categories }: Props) {
           </div>
         )}
       </div>
-
-      {/* Preview modal */}
-      <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} onSelectFile={setPreviewFile} />
     </div>
   );
 }

@@ -1,0 +1,235 @@
+import { notFound } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { formatFileSize, formatDate } from "@/utils/format";
+import { FileIcon } from "@/utils/fileIcon";
+import { Download, ExternalLink, Calendar, HardDrive, Eye, Tag, AlertCircle, FileText, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import type { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const file = await prisma.mediaFile.findUnique({ where: { id } });
+  if (!file) return { title: "Không tìm thấy tài liệu" };
+  return { title: `${file.title} - CDC Media` };
+}
+
+export default async function DocumentPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  
+  const file = await prisma.mediaFile.findUnique({
+    where: { id },
+    include: {
+      category: true,
+      uploader: { select: { id: true, username: true, displayName: true } },
+      tags: { include: { tag: true } }
+    }
+  });
+
+  if (!file) {
+    notFound();
+  }
+
+  const relatedFiles = await prisma.mediaFile.findMany({
+    where: { 
+      categoryId: file.categoryId,
+      id: { not: file.id },
+      isPublic: true
+    },
+    include: {
+      category: true,
+    },
+    orderBy: { createdAt: "desc" },
+    take: 5
+  });
+
+  const downloadUrl = `/api/download/${file.id}`;
+  const proxyUrl = `/api/download/${file.id}?preview=true`;
+  const isDrive = file.filepath?.startsWith("gdrive://") || (file.filepath === "external" && !!file.driveWebLink);
+  const isImage = file.fileType.startsWith("image/");
+  const isVideo = file.fileType.startsWith("video/");
+  const isAudio = file.fileType.startsWith("audio/");
+  const isPdf = file.fileType === "application/pdf";
+  const isOffice =
+    file.fileType.includes("word") ||
+    file.fileType.includes("sheet") ||
+    file.fileType.includes("presentation") ||
+    file.fileType.includes("excel") ||
+    file.fileType.includes("powerpoint");
+
+  const driveFileId = file.driveFileId ?? file.driveWebLink?.match(/\/file\/d\/([^/]+)/)?.[1] ?? null;
+  const driveEmbedUrl = driveFileId ? `https://drive.google.com/file/d/${driveFileId}/preview` : null;
+
+  const renderPreview = () => {
+    if (isDrive && driveEmbedUrl && (isOffice || file.filepath === "external")) {
+      return (
+        <iframe
+          src={driveEmbedUrl}
+          className="w-full h-full border-0 absolute inset-0"
+          title={file.title}
+          allow="autoplay"
+        />
+      );
+    }
+    if (isImage) {
+      // eslint-disable-next-line @next/next/no-img-element
+      return <img src={proxyUrl} alt={file.title} className="w-full h-full object-contain bg-slate-900/5 absolute inset-0" />;
+    }
+    if (isVideo) {
+      return <video src={proxyUrl} controls controlsList="nodownload" playsInline className="w-full h-full bg-black object-contain absolute inset-0" />;
+    }
+    if (isAudio) {
+      return (
+        <div className="flex flex-col items-center justify-center gap-4 py-10 px-6 h-full bg-slate-50 absolute inset-0">
+          <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center shadow-inner">
+            <FileIcon mimeType={file.fileType} filename={file.filename} className="w-12 h-12" />
+          </div>
+          <audio src={proxyUrl} controls className="w-full max-w-md mt-6" />
+        </div>
+      );
+    }
+    if (isPdf) {
+      return <iframe src={proxyUrl} className="w-full h-full border-0 absolute inset-0" title={file.title} />;
+    }
+    if (isOffice) {
+      return (
+        <div className="flex flex-col items-center justify-center gap-3 py-16 text-slate-400 bg-slate-50 h-full absolute inset-0">
+          <AlertCircle className="w-16 h-16 text-amber-500/50" />
+          <p className="text-base font-medium text-slate-600">File Office lưu trên máy chủ</p>
+          <p className="text-sm">Tải xuống để mở bằng Microsoft Office</p>
+        </div>
+      );
+    }
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-16 text-slate-400 bg-slate-50 h-full absolute inset-0">
+        <FileText className="w-16 h-16" />
+        <p className="text-base">Không hỗ trợ xem trước định dạng này</p>
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col bg-slate-50">
+      <Navbar />
+      
+      <main className="flex-1 container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-7xl">
+        <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors mb-6">
+          <ArrowLeft className="w-4 h-4" /> Quay lại kho tài liệu
+        </Link>
+
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-12">
+          <div className="flex flex-col lg:flex-row min-h-[500px]">
+            {/* Left Column: Preview */}
+            <div className="lg:w-2/3 xl:w-3/4 border-b lg:border-b-0 lg:border-r border-slate-200 bg-slate-100/50 relative flex flex-col min-h-[350px] lg:min-h-full">
+              {renderPreview()}
+            </div>
+
+            {/* Right Column: Info & Actions */}
+            <div className="lg:w-1/3 xl:w-1/4 flex flex-col bg-white">
+              <div className="p-6 lg:p-8 flex-1 space-y-8">
+                {/* File Title & Basic Info */}
+                <div>
+                  <div className="flex items-start gap-3 mb-4">
+                    <FileIcon mimeType={file.fileType} filename={file.filename} className="w-10 h-10 shrink-0 mt-1" />
+                    <h1 className="font-bold text-2xl text-slate-800 leading-tight">{file.title}</h1>
+                  </div>
+                  <div className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-white mb-6" style={{ backgroundColor: file.category.color ?? "#3B82F6" }}>
+                    {file.category.name}
+                  </div>
+                  <div className="grid grid-cols-2 gap-y-4 text-sm text-slate-600">
+                    <div className="flex items-center gap-2.5">
+                      <HardDrive className="w-4.5 h-4.5 text-slate-400" />
+                      <span className="truncate">{formatFileSize(file.fileSize)}</span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <Calendar className="w-4.5 h-4.5 text-slate-400" />
+                      <span className="truncate">{formatDate(file.createdAt)}</span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <Eye className="w-4.5 h-4.5 text-slate-400" />
+                      <span className="truncate">{file.downloadCount} lượt tải</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="space-y-3 pt-2 border-t border-slate-100">
+                  <a href={downloadUrl} download className="btn-primary w-full flex justify-center items-center gap-2 py-3 rounded-xl shadow-sm hover:shadow text-base">
+                    <Download className="w-5 h-5" />
+                    <span className="font-medium">Tải xuống tài liệu</span>
+                  </a>
+                  {file.driveWebLink && (
+                    <a href={file.driveWebLink} target="_blank" rel="noopener noreferrer" className="btn-secondary w-full flex justify-center items-center gap-2 py-3 rounded-xl text-base">
+                      <ExternalLink className="w-5 h-5" />
+                      <span className="font-medium">Mở trên Google Drive</span>
+                    </a>
+                  )}
+                </div>
+
+                {/* Description */}
+                {file.description && (
+                  <div className="pt-2 border-t border-slate-100">
+                    <h3 className="text-sm font-bold text-slate-800 mb-2">Mô tả</h3>
+                    <p className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
+                      {file.description}
+                    </p>
+                  </div>
+                )}
+
+                {/* Tags */}
+                {file.tags.length > 0 && (
+                  <div className="pt-2 border-t border-slate-100">
+                    <h3 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-1.5"><Tag className="w-4 h-4" /> Thẻ từ khóa</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {file.tags.map(({ tag }) => (
+                        <span key={tag.id} className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 text-xs font-medium border border-blue-100/50 hover:bg-blue-100 cursor-pointer transition-colors">
+                          #{tag.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Related Documents Section */}
+        {relatedFiles.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+              <span className="w-1.5 h-6 rounded-full bg-blue-500 block"></span>
+              Tài liệu cùng chuyên mục
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {relatedFiles.map(rel => (
+                <Link key={rel.id} href={`/document/${rel.id}`} className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/5 transition-all flex flex-col h-full">
+                  <div className="aspect-[4/3] bg-slate-50 relative overflow-hidden flex items-center justify-center border-b border-slate-100">
+                    {rel.thumbnailUrl || (rel.fileType.startsWith("image/") && rel.filepath) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={`/api/thumbnail/${rel.id}`} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    ) : (
+                      <FileIcon mimeType={rel.fileType} filename={rel.filename} className="w-12 h-12" />
+                    )}
+                  </div>
+                  <div className="p-4 flex-1 flex flex-col">
+                    <h3 className="font-bold text-slate-800 text-sm leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors mb-2">
+                      {rel.title}
+                    </h3>
+                    <div className="mt-auto flex items-center justify-between text-xs text-slate-500">
+                      <span>{formatFileSize(rel.fileSize)}</span>
+                      <span>{formatDate(rel.createdAt)}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
