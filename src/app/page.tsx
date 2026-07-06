@@ -47,7 +47,7 @@ export default async function HomePage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-10 space-y-6 sm:space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-5 sm:space-y-6">
       {/* Banner TOP đã chuyển sang layout.tsx để full màn hình */}
 
       {/* Hero — the subject is a government health media archive: authoritative, trusted, accessible */}
@@ -60,7 +60,7 @@ export default async function HomePage() {
         {/* Grid overlay */}
         <div className="absolute inset-0 bg-grid opacity-50 pointer-events-none" />
 
-        <div className="relative px-6 sm:px-10 py-10 sm:py-14">
+        <div className="relative px-4 sm:px-8 py-6 sm:py-10">
           {/* Authority badge */}
           <div className="flex justify-center mb-5">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#1D78B8]/10 to-[#1D78B8]/5 border border-[#1D78B8]/20 text-[#1D78B8] text-xs sm:text-sm font-semibold">
@@ -71,8 +71,8 @@ export default async function HomePage() {
           </div>
 
           {/* Headline */}
-          <div className="text-center mb-4">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-800 tracking-tight leading-tight mb-3">
+          <div className="text-center mb-3">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-800 tracking-tight leading-tight mb-2">
               Ngân hàng Tài liệu
               <br />
               <span className="gradient-text">Truyền thông Sức khỏe</span>
@@ -83,17 +83,17 @@ export default async function HomePage() {
           </div>
 
           {/* Stats grid */}
-          <div className="flex flex-wrap justify-center gap-3 mt-8">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mt-6">
             {stats.map((s) => (
               <div
                 key={s.label}
-                className={`flex items-center gap-3 px-4 py-3 rounded-2xl ${s.bg} border ${s.border} backdrop-blur-sm hover:scale-105 transition-transform duration-200 cursor-default`}
+                className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl ${s.bg} border ${s.border} backdrop-blur-sm hover:scale-105 transition-transform duration-200 cursor-default`}
               >
-                <div className={`p-1.5 rounded-xl ${s.bg}`}>
-                  <s.icon className={`w-4 h-4 ${s.color}`} />
+                <div className={`p-1.5 rounded-lg sm:rounded-xl ${s.bg}`}>
+                  <s.icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${s.color}`} />
                 </div>
                 <div className="text-left">
-                  <p className={`text-base sm:text-lg font-extrabold ${s.color} leading-none tabular-nums`}>{s.value}</p>
+                  <p className={`text-sm sm:text-base font-extrabold ${s.color} leading-none tabular-nums`}>{s.value}</p>
                   <p className="text-[10px] sm:text-[11px] text-slate-500 leading-none mt-0.5 font-medium">{s.label}</p>
                 </div>
               </div>

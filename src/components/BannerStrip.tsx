@@ -16,9 +16,10 @@ type Banner = {
 interface Props {
   position: "TOP" | "MIDDLE" | "BOTTOM";
   className?: string;
+  isSticky?: boolean;
 }
 
-export default function BannerStrip({ position, className = "" }: Props) {
+export default function BannerStrip({ position, className = "", isSticky = false }: Props) {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [current, setCurrent] = useState(0);
   const [dismissed, setDismissed] = useState(false);
@@ -97,7 +98,7 @@ export default function BannerStrip({ position, className = "" }: Props) {
     </div>
   );
 
-  return (
+  const content = (
     <div className={`w-full ${className}`}>
       {banner.linkUrl ? (
         <a href={banner.linkUrl} target="_blank" rel="noopener noreferrer" className="block">
@@ -106,4 +107,16 @@ export default function BannerStrip({ position, className = "" }: Props) {
       ) : inner}
     </div>
   );
+
+  if (isSticky) {
+    return (
+      <div className="w-full sticky top-14 sm:top-16 z-40 bg-[#f8fafc] border-b border-slate-200/50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-2 sm:pb-3 pt-0 w-full">
+          {content}
+        </div>
+      </div>
+    );
+  }
+
+  return content;
 }
