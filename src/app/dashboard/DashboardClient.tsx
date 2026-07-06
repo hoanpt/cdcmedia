@@ -3,6 +3,7 @@
 import { useState } from "react";
 import UploadFileForm from "./UploadFileForm";
 import UserFilesList from "./UserFilesList";
+import DriveSyncCard from "./DriveSyncCard";
 
 interface Category { id: string; name: string; color: string | null; }
 
@@ -21,6 +22,11 @@ export default function DashboardClient({ categories, isAdmin }: Props) {
         <UploadFileForm
           categories={categories}
           onUploaded={() => setRefreshSignal((n) => n + 1)}
+        />
+        
+        <DriveSyncCard 
+          isAdmin={isAdmin}
+          onSynced={() => setRefreshSignal((n) => n + 1)} 
         />
       </div>
 

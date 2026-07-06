@@ -145,3 +145,40 @@ export async function getDriveFileMetadata(fileId: string): Promise<{ size: numb
     return { size: 0, mimeType: "link" };
   }
 }
+
+export async function getFolderMetadata(folderId: string): Promise<{ name: string } | null> {
+  try {
+    const { drive } = await getDriveClient();
+    const meta = await drive.files.get({ fileId: folderId, fields: "name" });
+    return { name: meta.data.name ?? "Folder" };
+  } catch (e) {
+    console.error(`Could not fetch folder metadata for ${folderId}`, e);
+    return null;
+  }
+}
+
+export async function listFilesInFolder(folderId: string): Promise<any[]> {
+  const { drive } = await getDriveClient();
+  let allFiles: any[] = [];
+  let pageToken: string | undefined = undefined;
+
+  try {
+    do {
+      const response = await drive.files.list({
+        q: `'${folderId}' in parents and trashed=false`,
+        fields: "nextPageToken, files(id, name, mimeType, size, webViewLink, thumbnailLink)",
+        pageToken: pageToken,
+        pageSize: 100, // Fetch 100 at a time
+      });
+      if (response.data.files) {
+        allFiles = allFiles.concat(response.data.files);
+      }
+      pageToken = response.data.nextPageToken ?? undefined;
+    } while (pageToken);
+
+    return allFiles;
+  } catch (e) {
+    console.error(`Could not list files in folder ${folderId}`, e);
+    throw e;
+  }
+}
