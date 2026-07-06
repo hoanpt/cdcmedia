@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
     await logActivity(
       session.userId,
       "UPLOAD",
-      `Tải lên: "${title}" (${(file.size / 1024 / 1024).toFixed(2)} MB)`,
+      `Tải lên: "${title}" (${(fileSize / 1024 / 1024).toFixed(2)} MB)`,
       req.headers.get("x-forwarded-for") ?? undefined
     );
 
