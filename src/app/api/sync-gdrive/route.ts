@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { folderId } = await req.json();
+    const { folderId, isAlbum } = await req.json();
     if (!folderId) {
       return NextResponse.json({ error: "Missing folderId" }, { status: 400 });
     }
@@ -57,53 +57,106 @@ export async function POST(req: NextRequest) {
     // 5. Process files
     let syncedCount = 0;
     
-    for (const dFile of driveFiles) {
-      // Check if file is a folder, if so skip (we don't sync subfolders recursively for now)
-      if (dFile.mimeType === "application/vnd.google-apps.folder") continue;
+    const validFiles = driveFiles.filter(f => f.mimeType !== "application/vnd.google-apps.folder");
+    
+    if (validFiles.length === 0) {
+      return NextResponse.json({ message: "No valid files found in this folder", synced: 0 });
+    }
 
-      // Check if file already exists in DB
+    if (isAlbum) {
+      // Check if this album was already synced (by checking if the first file exists as a main file or attachment)
+      const firstFile = validFiles[0];
       const existing = await prisma.mediaFile.findFirst({
-        where: { driveFileId: dFile.id }
+        where: { driveFileId: firstFile.id }
       });
 
-      if (existing) continue; // Skip existing
+      if (!existing) {
+        let assignedCategoryId = docCategory.id;
+        if (firstFile.mimeType.startsWith("image/")) assignedCategoryId = imageCategory.id;
+        else if (firstFile.mimeType.startsWith("video/")) assignedCategoryId = videoCategory.id;
 
-      // Classify
-      let assignedCategoryId = docCategory.id;
-      if (dFile.mimeType.startsWith("image/")) assignedCategoryId = imageCategory.id;
-      else if (dFile.mimeType.startsWith("video/")) assignedCategoryId = videoCategory.id;
-      
-      const fileSize = dFile.size ? parseInt(dFile.size) : 0;
+        const newFile = await prisma.mediaFile.create({
+          data: {
+            title: folderName, // Use folder name as the title of the Album
+            filename: firstFile.name,
+            filepath: "external",
+            fileType: firstFile.mimeType,
+            fileSize: firstFile.size ? parseInt(firstFile.size) : 0,
+            driveFileId: firstFile.id,
+            driveWebLink: firstFile.webViewLink,
+            thumbnailUrl: firstFile.thumbnailLink?.replace(/=s\d+/, "=s800"),
+            isPublic: true,
+            categoryId: assignedCategoryId,
+            uploaderId: session.userId,
+            attachments: {
+              create: validFiles.slice(1).map(f => ({
+                filename: f.name,
+                filepath: "external",
+                fileType: f.mimeType,
+                fileSize: f.size ? parseInt(f.size) : 0,
+                driveFileId: f.id,
+                driveWebLink: f.webViewLink,
+              }))
+            }
+          }
+        });
 
-      // Create record
-      const newFile = await prisma.mediaFile.create({
-        data: {
-          title: dFile.name,
-          filename: dFile.name,
-          filepath: "external",
-          fileType: dFile.mimeType,
-          fileSize,
-          driveFileId: dFile.id,
-          driveWebLink: dFile.webViewLink,
-          thumbnailUrl: dFile.thumbnailLink?.replace(/=s\d+/, "=s800"), // High res thumbnail
-          isPublic: true,
-          categoryId: assignedCategoryId,
-          uploaderId: session.userId,
-        }
-      });
+        const tagsToConnect = Array.from(new Set([defaultTag.id, folderTag.id]));
+        await prisma.mediaFileTag.createMany({
+          data: tagsToConnect.map(tagId => ({
+            fileId: newFile.id,
+            tagId
+          })),
+          skipDuplicates: true
+        });
 
-      // Attach tags
-      // Use ignore on duplicate errors in case folderTag and defaultTag are the same
-      const tagsToConnect = Array.from(new Set([defaultTag.id, folderTag.id]));
-      await prisma.mediaFileTag.createMany({
-        data: tagsToConnect.map(tagId => ({
-          fileId: newFile.id,
-          tagId
-        })),
-        skipDuplicates: true
-      });
+        syncedCount = validFiles.length;
+      }
+    } else {
+      for (const dFile of validFiles) {
+        // Check if file already exists in DB
+        const existing = await prisma.mediaFile.findFirst({
+          where: { driveFileId: dFile.id }
+        });
 
-      syncedCount++;
+        if (existing) continue; // Skip existing
+
+        // Classify
+        let assignedCategoryId = docCategory.id;
+        if (dFile.mimeType.startsWith("image/")) assignedCategoryId = imageCategory.id;
+        else if (dFile.mimeType.startsWith("video/")) assignedCategoryId = videoCategory.id;
+        
+        const fileSize = dFile.size ? parseInt(dFile.size) : 0;
+
+        // Create record
+        const newFile = await prisma.mediaFile.create({
+          data: {
+            title: dFile.name,
+            filename: dFile.name,
+            filepath: "external",
+            fileType: dFile.mimeType,
+            fileSize,
+            driveFileId: dFile.id,
+            driveWebLink: dFile.webViewLink,
+            thumbnailUrl: dFile.thumbnailLink?.replace(/=s\d+/, "=s800"), // High res thumbnail
+            isPublic: true,
+            categoryId: assignedCategoryId,
+            uploaderId: session.userId,
+          }
+        });
+
+        // Attach tags
+        const tagsToConnect = Array.from(new Set([defaultTag.id, folderTag.id]));
+        await prisma.mediaFileTag.createMany({
+          data: tagsToConnect.map(tagId => ({
+            fileId: newFile.id,
+            tagId
+          })),
+          skipDuplicates: true
+        });
+
+        syncedCount++;
+      }
     }
 
     return NextResponse.json({ message: "Success", synced: syncedCount, totalScanned: driveFiles.length });

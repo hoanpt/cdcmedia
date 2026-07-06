@@ -29,7 +29,33 @@ export async function GET(req: NextRequest, { params }: Params) {
   const { id } = await params;
   const preview = req.nextUrl.searchParams.get("preview") === "true";
 
-  const file = await prisma.mediaFile.findUnique({ where: { id } });
+  let file = await prisma.mediaFile.findUnique({ where: { id } });
+  
+  if (!file) {
+    const attachment = await prisma.mediaAttachment.findUnique({ where: { id } });
+    if (attachment) {
+      // Cast attachment to match expected shape of `file` used in this route
+      file = {
+        id: attachment.id,
+        filename: attachment.filename,
+        filepath: attachment.filepath,
+        fileType: attachment.fileType,
+        fileSize: attachment.fileSize,
+        driveWebLink: attachment.driveWebLink,
+        driveFileId: attachment.driveFileId,
+        // Mock remaining fields to satisfy TypeScript
+        title: attachment.filename,
+        description: "",
+        isPublic: true,
+        downloadCount: 0,
+        categoryId: "",
+        uploaderId: "",
+        createdAt: attachment.createdAt,
+        updatedAt: attachment.createdAt,
+      } as any;
+    }
+  }
+
   if (!file) return NextResponse.json({ error: "Không tìm thấy" }, { status: 404 });
 
   // Increment download count (non-blocking)

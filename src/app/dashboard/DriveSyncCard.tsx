@@ -10,6 +10,7 @@ interface Props {
 
 export default function DriveSyncCard({ onSynced, isAdmin }: Props) {
   const [folderId, setFolderId] = useState("");
+  const [isAlbum, setIsAlbum] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [result, setResult] = useState<{ synced: number, total: number } | null>(null);
 
@@ -26,7 +27,7 @@ export default function DriveSyncCard({ onSynced, isAdmin }: Props) {
       const res = await fetch("/api/sync-gdrive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ folderId: folderId.trim() })
+        body: JSON.stringify({ folderId: folderId.trim(), isAlbum })
       });
       const data = await res.json();
 
@@ -68,6 +69,17 @@ export default function DriveSyncCard({ onSynced, isAdmin }: Props) {
             disabled={syncing}
           />
         </div>
+
+        <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+          <input 
+            type="checkbox" 
+            checked={isAlbum}
+            onChange={(e) => setIsAlbum(e.target.checked)}
+            disabled={syncing}
+            className="rounded border-slate-300 text-indigo-500 focus:ring-indigo-500"
+          />
+          Gộp tất cả file thành 1 Album (Slideshow)
+        </label>
 
         <button
           type="submit"
