@@ -28,12 +28,14 @@ export async function GET(_: NextRequest, { params }: Params) {
   const { size } = statSync(filePath);
 
   const fileBuffer = await readFile(filePath);
+  const isLogo = relative.toLowerCase() === "logo.png";
+  const cacheControl = isLogo ? "no-cache, no-store, must-revalidate" : "public, max-age=86400";
   
   return new NextResponse(fileBuffer, {
     headers: {
       "Content-Type": contentType,
       "Content-Length": String(size),
-      "Cache-Control": "public, max-age=86400",
+      "Cache-Control": cacheControl,
     },
   });
 }

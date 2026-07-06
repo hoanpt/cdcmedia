@@ -59,7 +59,7 @@ export default function BannerStrip({ position, className = "" }: Props) {
             <img
               src={b.imageUrl}
               alt={b.title}
-              className="w-full h-[100px] sm:h-[130px] md:h-[170px] lg:h-[220px] xl:h-[250px] object-cover bg-white"
+              className="w-full h-auto bg-white"
               style={{ display: "block" }}
             />
           </div>
