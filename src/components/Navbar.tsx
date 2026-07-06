@@ -43,7 +43,7 @@ export default function Navbar({ session }: NavbarProps) {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 shrink-0 group">
             <div className="relative w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover:shadow-md transition-all duration-200 group-hover:scale-105 overflow-hidden">
-              <img src="/api/uploads/logo.png" alt="CDC Đà Nẵng Logo" className="w-full h-full object-contain p-0.5" onError={(e) => { const target = e.currentTarget as HTMLImageElement; if (target.src.includes('/api/uploads/logo.png')) { target.src = '/Logo.png'; } else { target.style.display = 'none'; target.nextElementSibling?.classList.remove('hidden'); } }} />
+              <img src="/api/uploads/logo.png" alt="CDC Đà Nẵng Logo" className="w-full h-full object-contain p-0.5" onError={(e) => { const target = e.currentTarget as HTMLImageElement; if (!target.src.endsWith('/logo.png')) { target.src = '/logo.png'; } else { target.style.display = 'none'; target.nextElementSibling?.classList.remove('hidden'); } }} />
               <span className="hidden font-extrabold text-blue-600 text-[10px]">CDC</span>
             </div>
             <div className="hidden sm:flex flex-col leading-none">

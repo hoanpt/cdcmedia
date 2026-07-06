@@ -49,12 +49,12 @@ export default function BannerStrip({ position, className = "" }: Props) {
 
   const inner = (
     <div className="relative w-full overflow-hidden group rounded-2xl border border-slate-100 shadow-sm bg-slate-50">
-      {/* Ảnh banner tự động dàn ngang toàn bộ, tỷ lệ gốc sẽ làm chiều cao tự động */}
+      {/* Ảnh banner tự động dàn ngang, chiều cao được giới hạn khoảng 2/3 so với tỷ lệ gốc để cân đối hơn */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={banner.imageUrl}
         alt={banner.title}
-        className="w-full h-auto object-cover bg-white transition-opacity duration-500"
+        className="w-full h-[100px] sm:h-[130px] md:h-[170px] lg:h-[220px] xl:h-[250px] object-cover bg-white transition-opacity duration-500"
         style={{ display: "block" }}
       />
 
@@ -86,14 +86,6 @@ export default function BannerStrip({ position, className = "" }: Props) {
         </>
       )}
 
-      {/* Nút đóng */}
-      <button
-        onClick={(e) => { e.stopPropagation(); setDismissed(true); }}
-        className="absolute top-2 right-2 p-1 rounded-full bg-black/30 text-white hover:bg-black/50 transition"
-        title="Đóng banner"
-      >
-        <X className="w-3.5 h-3.5" />
-      </button>
     </div>
   );
 
