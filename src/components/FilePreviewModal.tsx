@@ -116,7 +116,7 @@ export default function FilePreviewModal({ file, onClose }: Props) {
 
           {/* Preview area */}
           <div className="flex-1 overflow-auto bg-slate-50/60 min-h-[180px]">
-            {isDrive && driveEmbedUrl ? (
+            {isDrive && driveEmbedUrl && (isOffice || file.filepath === "external") ? (
               <iframe
                 src={driveEmbedUrl}
                 className="w-full border-0"
