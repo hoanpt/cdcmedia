@@ -43,7 +43,16 @@ export async function GET(req: NextRequest, { params }: Params) {
 
   // ─── External Link (e.g. Google Drive Link) ─────────────────────
   if (file.filepath === "external" && file.driveWebLink) {
-    return NextResponse.redirect(file.driveWebLink);
+    if (preview) {
+      return NextResponse.redirect(file.driveWebLink);
+    } else {
+      // Try to extract ID and trigger direct download, fallback to view link if extraction fails
+      const driveFileId = file.driveFileId ?? file.driveWebLink.match(/\/file\/d\/([^/]+)/)?.[1];
+      if (driveFileId) {
+        return NextResponse.redirect(`https://drive.google.com/uc?export=download&id=${driveFileId}`);
+      }
+      return NextResponse.redirect(file.driveWebLink);
+    }
   }
 
   // ─── Google Drive ───────────────────────────────────────────────

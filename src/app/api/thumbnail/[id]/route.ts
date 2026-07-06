@@ -14,7 +14,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     // If we have a Google Drive thumbnailLink, redirect to it (higher resolution trick: replace =s220 with =s800)
     if (file.thumbnailUrl) {
       const highResUrl = file.thumbnailUrl.replace(/=s\d+/, "=s800");
-      return NextResponse.redirect(highResUrl);
+      const response = NextResponse.redirect(highResUrl);
+      response.headers.set("Cache-Control", "public, max-age=604800, immutable");
+      return response;
     }
 
     // If it's a local image upload, stream it directly

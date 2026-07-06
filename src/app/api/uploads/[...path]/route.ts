@@ -20,8 +20,21 @@ export async function GET(_: NextRequest, { params }: Params) {
   const relative = segments.join("/").replace(/\.\./g, "");
   const filePath = path.join(process.cwd(), "uploads", relative);
 
-  if (!existsSync(filePath))
+  if (!existsSync(filePath)) {
+    if (relative === "logo.png") {
+      const fallbackPath = path.join(process.cwd(), "public", "logo.png");
+      if (existsSync(fallbackPath)) {
+        const fileBuffer = await readFile(fallbackPath);
+        return new NextResponse(fileBuffer, {
+          headers: {
+            "Content-Type": "image/png",
+            "Cache-Control": "public, max-age=86400",
+          },
+        });
+      }
+    }
     return NextResponse.json({ error: "Không tìm thấy" }, { status: 404 });
+  }
 
   const ext = filePath.split(".").pop()?.toLowerCase() ?? "";
   const contentType = MIME[ext] ?? "application/octet-stream";
