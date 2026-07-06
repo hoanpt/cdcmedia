@@ -35,6 +35,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           toastOptions={{
             className: "!rounded-2xl !shadow-lg !font-medium",
             duration: 3000,
+          }}
         />
         <Navbar session={session} />
         
