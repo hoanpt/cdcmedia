@@ -86,6 +86,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Chuyên mục không tồn tại" }, { status: 400 });
     }
 
+    const uploader = await prisma.user.findUnique({ where: { id: session.userId } });
+    if (!uploader) {
+      return NextResponse.json({ error: "Tài khoản của bạn không tồn tại (phiên đăng nhập hết hạn)" }, { status: 401 });
+    }
+
     const buffer = Buffer.from(await file.arrayBuffer());
     const ext = path.extname(file.name) || "";
     const uniqueName = `${crypto.randomUUID()}${ext}`;
