@@ -134,7 +134,7 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
         </div>
       </div>
 
-      <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />
+      <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} onSelectFile={setPreviewFile} />
       {editingFile && (
         <EditFileModal
           file={editingFile}

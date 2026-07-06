@@ -365,7 +365,7 @@ export default function PublicFileList({ files, categories }: Props) {
       </div>
 
       {/* Preview modal */}
-      <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />
+      <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} onSelectFile={setPreviewFile} />
     </div>
   );
 }

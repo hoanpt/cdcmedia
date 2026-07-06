@@ -33,6 +33,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           });
         }
       }
+    } else if (file.filepath?.startsWith("gdrive://") && file.fileType.startsWith("image/")) {
+      // For images directly uploaded to Drive that don't have a thumbnail ready yet,
+      // fallback to streaming the full image as a preview. (It will be cached by CDN).
+      const downloadUrl = new URL(`/api/download/${id}?preview=true`, req.url).toString();
+      const response = NextResponse.redirect(downloadUrl);
+      response.headers.set("Cache-Control", "public, max-age=604800, immutable");
+      return response;
     }
 
     return new NextResponse("No thumbnail available", { status: 404 });
