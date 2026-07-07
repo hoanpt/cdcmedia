@@ -18,15 +18,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     
     if (!file) return new NextResponse("Not Found", { status: 404 });
 
-    // If we have a Google Drive thumbnailLink, redirect to it (higher resolution trick: replace =s220 with =s800)
-    if (file.thumbnailUrl) {
-      const highResUrl = file.thumbnailUrl.replace(/=s\d+/, "=s800");
-      const response = NextResponse.redirect(highResUrl);
-      response.headers.set("Cache-Control", "public, max-age=604800, immutable");
+    // 1. If it is a Google Drive file, use the permanent thumbnail endpoint
+    // This is much faster, never expires, and works for videos and images.
+    if (file.driveFileId) {
+      const driveThumbUrl = `https://drive.google.com/thumbnail?id=${file.driveFileId}&sz=w800`;
+      const response = NextResponse.redirect(driveThumbUrl);
+      // Cache heavily as this URL acts as a permanent redirect to Google's CDN
+      response.headers.set("Cache-Control", "public, s-maxage=86400, stale-while-revalidate=43200");
       return response;
     }
 
-    // If it's a local image upload, stream it directly
+    // 2. If it's a local image upload, stream it directly
     if (file.filepath && !file.filepath.startsWith("gdrive://") && file.filepath !== "external") {
       if (file.fileType.startsWith("image/")) {
         const localPath = path.join(process.cwd(), "uploads", file.filepath);
@@ -40,12 +42,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           });
         }
       }
-    } else if ((file.filepath?.startsWith("gdrive://") || file.filepath === "external") && file.fileType.startsWith("image/")) {
-      // For images directly uploaded to Drive that don't have a thumbnail ready yet,
-      // fallback to streaming the full image as a preview. (It will be cached by CDN).
-      const downloadUrl = new URL(`/api/download/${id}?preview=true`, req.url).toString();
-      const response = NextResponse.redirect(downloadUrl);
-      response.headers.set("Cache-Control", "public, max-age=604800, immutable");
+    }
+
+    // 3. Fallback to custom thumbnailUrl if exists and not googleusercontent (which expires)
+    if (file.thumbnailUrl && !file.thumbnailUrl.includes('googleusercontent.com')) {
+      const response = NextResponse.redirect(file.thumbnailUrl);
+      response.headers.set("Cache-Control", "public, max-age=86400");
       return response;
     }
 
