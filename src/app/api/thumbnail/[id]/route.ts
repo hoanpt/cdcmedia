@@ -51,6 +51,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return response;
     }
 
+    // 4. If all else fails, use the default thumbnail from AppSettings
+    const defaultThumbSetting = await prisma.appSetting.findUnique({ where: { key: "default_thumbnail_url" } });
+    if (defaultThumbSetting?.value) {
+      const fallbackUrl = new URL(defaultThumbSetting.value, req.url).toString();
+      const response = NextResponse.redirect(fallbackUrl);
+      response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=3600");
+      return response;
+    }
+
     return new NextResponse("No thumbnail available", { status: 404 });
   } catch (error) {
     console.error("[thumbnail API]", error);

@@ -6,6 +6,7 @@ import { Download, ExternalLink, Calendar, HardDrive, Eye, Tag, AlertCircle, Fil
 import Link from "next/link";
 import AlbumViewer from "./AlbumViewer";
 import RelatedFiles from "./RelatedFiles";
+import ViewTracker from "./ViewTracker";
 import type { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -51,6 +52,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-7xl">
+      <ViewTracker fileId={file.id} />
       <Link href="/" className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800 rounded-xl text-sm font-bold transition-colors mb-6 border border-indigo-100/50 shadow-sm">
           <ArrowLeft className="w-4 h-4" /> Quay lại kho tài liệu
         </Link>
@@ -85,6 +87,10 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
                     </div>
                     <div className="flex items-center gap-2.5">
                       <Eye className="w-4.5 h-4.5 text-slate-400" />
+                      <span className="truncate">{file.viewCount} lượt xem</span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <Download className="w-4.5 h-4.5 text-slate-400" />
                       <span className="truncate">{file.downloadCount} lượt tải</span>
                     </div>
                   </div>

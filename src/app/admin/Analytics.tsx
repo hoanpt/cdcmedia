@@ -13,12 +13,12 @@ import { clsx } from "clsx";
 // ── Types ───────────────────────────────────────────────────────────────────
 type Overview = {
   totalFiles: number; totalPublic: number; totalPrivate: number;
-  totalDownloads: number; totalSizeMB: number;
+  totalDownloads: number; totalViews: number; totalSizeMB: number;
   recentFiles: number; zeroDownload: number; zeroDownloadPct: number;
 };
 type TopFile = {
   id: string; title: string; fileType: string;
-  downloadCount: number; fileSize: number; createdAt: string;
+  downloadCount: number; viewCount: number; fileSize: number; createdAt: string;
   isPublic: boolean; score: number;
   category: { name: string; color: string | null };
 };
@@ -87,7 +87,8 @@ const TYPE_COLORS: Record<string, string> = {
 function OverviewCards({ ov }: { ov: Overview }) {
   const cards = [
     { label: "Tổng tài liệu", value: ov.totalFiles, sub: `${ov.totalPublic} công khai`, icon: FileArchive, color: "text-blue-600", bg: "bg-blue-50" },
-    { label: "Lượt tải tổng", value: ov.totalDownloads.toLocaleString("vi"), sub: "tất cả thời gian", icon: Download, color: "text-emerald-600", bg: "bg-emerald-50" },
+    { label: "Tổng lượt tải", value: ov.totalDownloads.toLocaleString("vi"), sub: "tất cả thời gian", icon: Download, color: "text-emerald-600", bg: "bg-emerald-50" },
+    { label: "Tổng lượt xem", value: ov.totalViews.toLocaleString("vi"), sub: "tất cả thời gian", icon: Eye, color: "text-amber-600", bg: "bg-amber-50" },
     { label: "Mới 30 ngày", value: ov.recentFiles, sub: "tài liệu mới", icon: Clock, color: "text-indigo-600", bg: "bg-indigo-50" },
     { label: "Chưa có lượt tải", value: `${ov.zeroDownloadPct}%`, sub: `${ov.zeroDownload} tài liệu`, icon: AlertTriangle, color: ov.zeroDownloadPct > 30 ? "text-amber-600" : "text-slate-500", bg: ov.zeroDownloadPct > 30 ? "bg-amber-50" : "bg-slate-50" },
   ];
@@ -143,6 +144,15 @@ function TopFilesTable({ files }: { files: TopFile[] }) {
                   </span>
                   <span className="text-[10px] text-slate-400">{formatFileSize(f.fileSize)}</span>
                   <span className="text-[10px] text-slate-400">{formatDate(new Date(f.createdAt))}</span>
+                </div>
+                {/* Metrics display */}
+                <div className="flex items-center gap-3 mt-1.5 text-xs">
+                  <span className="flex items-center gap-1 text-slate-500" title="Lượt tải">
+                    <Download className="w-3.5 h-3.5 text-emerald-500" /> {f.downloadCount.toLocaleString("vi")}
+                  </span>
+                  <span className="flex items-center gap-1 text-slate-500" title="Lượt xem">
+                    <Eye className="w-3.5 h-3.5 text-amber-500" /> {f.viewCount.toLocaleString("vi")}
+                  </span>
                 </div>
                 {/* Bar */}
                 <div className="mt-1.5 hidden sm:block">

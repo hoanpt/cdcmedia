@@ -321,11 +321,18 @@ export default function PublicFileList({ files, categories }: Props) {
                 <div className="flex items-center justify-between text-[11px] text-slate-450 mt-auto pt-2.5 border-t border-slate-100/80">
                   <span className="font-medium text-slate-400">{formatFileSize(file.fileSize)}</span>
                   <span className="text-slate-400">{formatDate(file.createdAt)}</span>
-                  {file.downloadCount > 0 && (
-                    <span className="flex items-center gap-1 text-slate-500 font-medium">
-                      <Download className="w-3 h-3 text-slate-400" /> {file.downloadCount}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {file.viewCount > 0 && (
+                      <span className="flex items-center gap-1 text-slate-500 font-medium" title={`${file.viewCount} lượt xem`}>
+                        <Eye className="w-3 h-3 text-slate-400" /> {file.viewCount}
+                      </span>
+                    )}
+                    {file.downloadCount > 0 && (
+                      <span className="flex items-center gap-1 text-slate-500 font-medium" title={`${file.downloadCount} lượt tải`}>
+                        <Download className="w-3 h-3 text-slate-400" /> {file.downloadCount}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Actions */}

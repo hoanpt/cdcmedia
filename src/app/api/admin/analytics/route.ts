@@ -21,6 +21,7 @@ export async function GET() {
     totalFiles,
     totalPublic,
     totalDownloads,
+    totalViews,
     totalSize,
 
     // Top tài liệu theo lượt tải
@@ -47,6 +48,7 @@ export async function GET() {
     prisma.mediaFile.count(),
     prisma.mediaFile.count({ where: { isPublic: true } }),
     prisma.mediaFile.aggregate({ _sum: { downloadCount: true } }),
+    prisma.mediaFile.aggregate({ _sum: { viewCount: true } }),
     prisma.mediaFile.aggregate({ _sum: { fileSize: true } }),
 
     // Top 10 file tải nhiều nhất
@@ -54,7 +56,7 @@ export async function GET() {
       orderBy: { downloadCount: "desc" },
       take: 10,
       select: {
-        id: true, title: true, fileType: true, downloadCount: true,
+        id: true, title: true, fileType: true, downloadCount: true, viewCount: true,
         fileSize: true, createdAt: true, isPublic: true,
         category: { select: { name: true, color: true } },
       },
@@ -65,7 +67,7 @@ export async function GET() {
       include: {
         _count: { select: { files: true } },
         files: {
-          select: { downloadCount: true, fileSize: true, isPublic: true },
+          select: { downloadCount: true, viewCount: true, fileSize: true, isPublic: true },
         },
       },
       orderBy: { name: "asc" },
@@ -80,7 +82,7 @@ export async function GET() {
 
     // Phân bố loại file
     prisma.mediaFile.findMany({
-      select: { fileType: true, fileSize: true, downloadCount: true },
+      select: { fileType: true, fileSize: true, downloadCount: true, viewCount: true },
     }),
 
     // File mới 30 ngày
@@ -165,7 +167,8 @@ export async function GET() {
       totalPublic,
       totalPrivate: totalFiles - totalPublic,
       totalDownloads: totalDownloads._sum.downloadCount ?? 0,
-      totalSizeMB: Math.round((totalSize._sum.fileSize ?? 0) / 1024 / 1024 * 10) / 10,
+      totalViews: totalViews._sum.viewCount ?? 0,
+      totalSizeMB: (totalSize._sum.fileSize ?? 0) / (1024 * 1024),
       recentFiles,
       zeroDownload,
       zeroDownloadPct: totalFiles > 0 ? Math.round(zeroDownload / totalFiles * 100) : 0,

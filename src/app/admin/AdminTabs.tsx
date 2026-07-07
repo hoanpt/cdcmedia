@@ -15,7 +15,7 @@ const TABS = [
   { id: "categories", label: "Chuyên mục", icon: FolderOpen },
   { id: "users", label: "Tài khoản", icon: Users },
   { id: "ads", label: "Truyền thông", icon: Megaphone },
-  { id: "drive", label: "Google Drive", icon: CloudCog },
+  { id: "drive", label: "Cài đặt chung", icon: CloudCog },
   { id: "logs", label: "Nhật ký", icon: ClipboardList },
 ];
 

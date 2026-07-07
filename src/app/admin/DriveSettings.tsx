@@ -9,6 +9,7 @@ interface Settings {
   gdrive_client_secret: string;
   gdrive_refresh_token: string;
   gdrive_folder_id: string;
+  default_thumbnail_url: string;
 }
 
 export default function DriveSettings() {
@@ -17,6 +18,7 @@ export default function DriveSettings() {
     gdrive_client_secret: "",
     gdrive_refresh_token: "",
     gdrive_folder_id: "",
+    default_thumbnail_url: "",
   });
   const [showSecret, setShowSecret] = useState(false);
   const [showToken, setShowToken] = useState(false);
@@ -41,6 +43,7 @@ export default function DriveSettings() {
         gdrive_client_secret: settings.gdrive_client_secret,
         gdrive_refresh_token: settings.gdrive_refresh_token,
         gdrive_folder_id: settings.gdrive_folder_id,
+        default_thumbnail_url: settings.default_thumbnail_url,
       }),
     });
     setSaving(false);
@@ -62,6 +65,28 @@ export default function DriveSettings() {
     return (bytes / 1024 / 1024 / 1024).toFixed(2) + " GB";
   }
 
+  async function handleUploadThumbnail(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const fd = new FormData();
+    fd.append("file", file);
+    
+    setSaving(true);
+    try {
+      const res = await fetch("/api/upload-image", { method: "POST", body: fd });
+      const data = await res.json();
+      if (res.ok) {
+        setSettings((s) => ({ ...s, default_thumbnail_url: data.url }));
+        toast.success("Tải ảnh bìa thành công! Đừng quên bấm Lưu cài đặt.");
+      } else toast.error(data.error || "Lỗi upload");
+    } catch {
+      toast.error("Lỗi kết nối");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
@@ -79,7 +104,30 @@ export default function DriveSettings() {
         </ol>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-4">
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4">
+        <h4 className="font-bold text-slate-800 border-b border-slate-100 pb-2">1. Ảnh bìa mặc định</h4>
+        <p className="text-xs text-slate-500">Hình ảnh này sẽ được hiển thị khi một video hoặc tài liệu không tải được ảnh bìa.</p>
+        
+        <div className="flex items-start gap-6">
+          <div className="w-48 h-32 bg-slate-100 rounded-xl border border-slate-200 overflow-hidden flex items-center justify-center relative shrink-0">
+            {settings.default_thumbnail_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={settings.default_thumbnail_url} alt="Default Thumbnail" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-sm font-medium text-slate-400">Chưa có ảnh</span>
+            )}
+          </div>
+          <div>
+            <label className="btn-secondary px-4 py-2 cursor-pointer inline-flex items-center gap-2">
+              <Cloud className="w-4 h-4" /> Chọn ảnh tải lên
+              <input type="file" className="hidden" accept="image/*" onChange={handleUploadThumbnail} disabled={saving} />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <form onSubmit={handleSave} className="space-y-4 bg-white border border-slate-200 rounded-2xl p-5">
+        <h4 className="font-bold text-slate-800 border-b border-slate-100 pb-2">2. Cấu hình kết nối Google Drive</h4>
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1">Client ID</label>
           <input

@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { FileIcon } from "@/utils/fileIcon";
 import { formatFileSize, formatDate } from "@/utils/format";
+import { Eye } from "lucide-react";
 import clsx from "clsx";
 
 export default function RelatedFiles({ relatedFiles }: { relatedFiles: any[] }) {
@@ -77,7 +78,14 @@ export default function RelatedFiles({ relatedFiles }: { relatedFiles: any[] }) 
               </h3>
               <div className="mt-auto flex items-center justify-between text-[11px] font-semibold text-slate-400">
                 <span className="bg-white px-2 py-1 rounded-md border border-slate-100 shadow-sm">{formatFileSize(rel.fileSize)}</span>
-                <span className="text-slate-400">{formatDate(rel.createdAt)}</span>
+                <div className="flex items-center gap-2">
+                  {rel.viewCount > 0 && (
+                    <span className="flex items-center gap-1 text-slate-400" title={`${rel.viewCount} lượt xem`}>
+                      <Eye className="w-3 h-3" /> {rel.viewCount}
+                    </span>
+                  )}
+                  <span className="text-slate-400">{formatDate(rel.createdAt)}</span>
+                </div>
               </div>
             </div>
           </Link>

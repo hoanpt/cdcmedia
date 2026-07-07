@@ -56,6 +56,7 @@ model MediaFile {
   fileType      String
   fileSize      Int
   downloadCount Int            @default(0)
+  viewCount     Int            @default(0)
   isPublic      Boolean        @default(true)
   year          Int?
   categoryId    String
