@@ -20,6 +20,8 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
   const [files, setFiles] = useState<FileWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingFile, setEditingFile] = useState<FileWithRelations | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const fetchFiles = useCallback(async () => {
     setLoading(true);
@@ -75,7 +77,7 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
         </div>
 
         <div className="divide-y divide-slate-50">
-          {files.map((file) => (
+          {files.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((file) => (
             <div key={file.id} className="px-5 py-4 hover:bg-slate-50/50 transition-colors">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 shrink-0 rounded-lg overflow-hidden flex items-center justify-center bg-slate-100 relative">
@@ -131,6 +133,64 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
             </div>
           ))}
         </div>
+
+        {/* Pagination UI */}
+        {Math.ceil(files.length / itemsPerPage) > 1 && (
+          <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-slate-50/50">
+            <span className="text-xs text-slate-500">
+              Hiển thị {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, files.length)} trong {files.length} tài liệu
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-2.5 py-1.5 rounded text-xs font-medium border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-50 transition"
+              >
+                Trước
+              </button>
+              
+              {Array.from({ length: Math.ceil(files.length / itemsPerPage) }, (_, i) => i + 1).map(page => {
+                const totalPages = Math.ceil(files.length / itemsPerPage);
+                if (
+                  page === 1 || 
+                  page === totalPages || 
+                  (page >= currentPage - 1 && page <= currentPage + 1)
+                ) {
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-7 h-7 flex items-center justify-center rounded text-xs font-medium transition ${
+                        currentPage === page 
+                          ? "bg-indigo-50 text-indigo-600 border border-indigo-200" 
+                          : "text-slate-600 hover:bg-white border border-transparent hover:border-slate-200"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                }
+                
+                if (
+                  (page === 2 && currentPage > 3) ||
+                  (page === totalPages - 1 && currentPage < totalPages - 2)
+                ) {
+                  return <span key={page} className="text-slate-400 px-1 text-xs">...</span>;
+                }
+                
+                return null;
+              })}
+
+              <button
+                onClick={() => setCurrentPage(p => Math.min(Math.ceil(files.length / itemsPerPage), p + 1))}
+                disabled={currentPage === Math.ceil(files.length / itemsPerPage)}
+                className="px-2.5 py-1.5 rounded text-xs font-medium border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-50 transition"
+              >
+                Sau
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
 

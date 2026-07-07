@@ -29,7 +29,9 @@ export default function PublicFileList({ files, categories }: Props) {
   const [typeFilter, setTypeFilter] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedTag, setSelectedTag] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   // Collect all tags from files
   const allTags = useMemo(() => {
@@ -65,7 +67,16 @@ export default function PublicFileList({ files, categories }: Props) {
     setTypeFilter("");
     setSelectedTag("");
     setQuery("");
+    setCurrentPage(1);
   }, []);
+
+  // Reset page when filters change
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, typeFilter, selectedTag, query]);
+
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const paginatedFiles = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const hasActiveFilters = selectedCategory || typeFilter || selectedTag || query;
 
@@ -269,14 +280,14 @@ export default function PublicFileList({ files, categories }: Props) {
 
         {/* Grid */}
         {filtered.length === 0 ? (
-          <div className="text-center py-16 sm:py-24 text-slate-400">
-            <Search className="w-10 h-10 mx-auto mb-3 opacity-40" />
-            <p className="font-medium">Không tìm thấy tài liệu nào</p>
-            <p className="text-sm mt-1">Thử thay đổi từ khóa hoặc bộ lọc</p>
-          </div>
-        ) : (
+            <div className="flex flex-col items-center justify-center py-24 text-slate-400 gap-3">
+              <Search className="w-12 h-12 text-slate-200" />
+              <p className="font-medium text-slate-500">Không tìm thấy tài liệu phù hợp</p>
+              <button onClick={clearFilters} className="text-blue-500 text-sm hover:underline mt-1">Xóa bộ lọc</button>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-            {filtered.map((file) => (
+            {filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((file) => (
               <div
                 key={file.id}
                 className="card border border-slate-200/60 hover:border-blue-200/80 hover:shadow-lg hover:-translate-y-1 flex flex-col gap-3.5 p-4 animate-fade-in transition-all duration-300"
@@ -360,6 +371,63 @@ export default function PublicFileList({ files, categories }: Props) {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Pagination UI */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-8">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              Trước
+            </button>
+            
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                // Logic to show a reasonable number of pages
+                if (
+                  page === 1 || 
+                  page === totalPages || 
+                  (page >= currentPage - 1 && page <= currentPage + 1)
+                ) {
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={clsx(
+                        "w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition",
+                        currentPage === page 
+                          ? "bg-blue-600 text-white shadow-sm" 
+                          : "text-slate-600 hover:bg-slate-100"
+                      )}
+                    >
+                      {page}
+                    </button>
+                  );
+                }
+                
+                // Show ellipsis
+                if (
+                  (page === 2 && currentPage > 3) ||
+                  (page === totalPages - 1 && currentPage < totalPages - 2)
+                ) {
+                  return <span key={page} className="text-slate-400 px-1">...</span>;
+                }
+                
+                return null;
+              })}
+            </div>
+
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              Sau
+            </button>
           </div>
         )}
       </div>
