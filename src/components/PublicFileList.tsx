@@ -30,14 +30,37 @@ export default function PublicFileList({ files, categories }: Props) {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedTag, setSelectedTag] = useState("");
   const [showFilters, setShowFilters] = useState(true);
+  const [showAllTags, setShowAllTags] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
+  const itemsPerPage = 9;
 
-  // Collect all tags from files
+  // Collect all tags from files (case-insensitive, sorted by frequency)
   const allTags = useMemo(() => {
-    const tagMap = new Map<string, string>();
-    files.forEach((f) => f.tags.forEach(({ tag }) => tagMap.set(tag.id, tag.name)));
-    return Array.from(tagMap.entries()).map(([id, name]) => ({ id, name }));
+    const counts = new Map<string, number>();
+    const originalNames = new Map<string, string>();
+
+    files.forEach((f) => {
+      const added = new Set<string>();
+      f.tags.forEach(({ tag }) => {
+        const lowerName = tag.name.toLowerCase();
+        if (!added.has(lowerName)) {
+          added.add(lowerName);
+          counts.set(lowerName, (counts.get(lowerName) || 0) + 1);
+          if (!originalNames.has(lowerName)) {
+            originalNames.set(lowerName, tag.name); // keep the first original casing we see
+          }
+        }
+      });
+    });
+
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1]) // sort by count descending
+      .map(([lowerName, count]) => ({
+        id: lowerName, // use lowercase name as unique id
+        name: originalNames.get(lowerName) || lowerName,
+        lowerName,
+        count
+      }));
   }, [files]);
 
   const filtered = useMemo(() => {
@@ -49,7 +72,7 @@ export default function PublicFileList({ files, categories }: Props) {
           : f.fileType.includes(typeFilter) || f.fileType.startsWith(typeFilter + "/");
         if (!match) return false;
       }
-      if (selectedTag && !f.tags.some(({ tag }) => tag.name === selectedTag)) return false;
+      if (selectedTag && !f.tags.some(({ tag }) => tag.name.toLowerCase() === selectedTag)) return false;
       if (query) {
         const q = query.toLowerCase();
         if (
@@ -220,13 +243,13 @@ export default function PublicFileList({ files, categories }: Props) {
                   <Tag className="w-3 h-3" /> Thẻ
                 </p>
                 <div className="flex flex-wrap gap-1.5">
-                  {allTags.map((tag) => (
+                  {(showAllTags ? allTags : allTags.slice(0, 15)).map((tag) => (
                     <button
                       key={tag.id}
-                      onClick={() => setSelectedTag(selectedTag === tag.name ? "" : tag.name)}
+                      onClick={() => setSelectedTag(selectedTag === tag.lowerName ? "" : tag.lowerName)}
                       className={clsx(
                         "px-3 py-1 rounded-full text-xs font-medium transition-all",
-                        selectedTag === tag.name
+                        selectedTag === tag.lowerName
                           ? "bg-indigo-600 text-white"
                           : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
                       )}
@@ -234,6 +257,14 @@ export default function PublicFileList({ files, categories }: Props) {
                       #{tag.name}
                     </button>
                   ))}
+                  {allTags.length > 15 && (
+                    <button
+                      onClick={() => setShowAllTags(!showAllTags)}
+                      className="px-3 py-1 rounded-full text-xs font-medium transition-all bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    >
+                      {showAllTags ? "Thu gọn" : `Xem thêm (${allTags.length - 15})`}
+                    </button>
+                  )}
                 </div>
               </div>
             )}
