@@ -60,41 +60,35 @@ export default async function HomePage() {
         {/* Grid overlay */}
         <div className="absolute inset-0 bg-grid opacity-50 pointer-events-none" />
 
-        <div className="relative px-4 sm:px-6 py-5 sm:py-6">
-          {/* Authority badge */}
-          <div className="flex justify-center mb-3">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#1D78B8]/10 to-[#1D78B8]/5 border border-[#1D78B8]/20 text-[#1D78B8] text-xs sm:text-sm font-semibold">
-              <Shield className="w-3.5 h-3.5" />
-              <span className="w-1.5 h-1.5 rounded-full bg-[#D31224] animate-pulse" />
+        <div className="relative px-5 py-5 sm:px-6 sm:py-5 flex flex-col md:flex-row items-center md:items-end justify-between gap-5">
+          {/* Headline & Info */}
+          <div className="flex-1 w-full text-center md:text-left">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-3 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-[11px] font-bold uppercase tracking-widest">
+              <Shield className="w-3.5 h-3.5 text-[#1D78B8]" />
               Trung tâm Kiểm soát Bệnh tật TP. Đà Nẵng
             </div>
-          </div>
-
-          {/* Headline */}
-          <div className="text-center mb-3">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-800 tracking-tight leading-tight mb-2">
-              Ngân hàng Tài liệu
-              <br />
-              <span className="gradient-text">Truyền thông Sức khỏe</span>
+            
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight leading-tight mb-2">
+              Ngân hàng Tài liệu <span className="text-[#1D78B8]">Truyền thông</span>
             </h1>
-            <p className="text-slate-500 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+            <p className="text-slate-500 text-sm max-w-xl mx-auto md:mx-0 leading-relaxed">
               Kho lưu trữ tập trung tài liệu truyền thông, hình ảnh, video và ấn phẩm phòng chống dịch bệnh của CDC Đà Nẵng.
             </p>
           </div>
 
           {/* Stats grid */}
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mt-4">
+          <div className="flex flex-wrap justify-center md:justify-end gap-2 shrink-0">
             {stats.map((s) => (
               <div
                 key={s.label}
-                className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl ${s.bg} border ${s.border} backdrop-blur-sm hover:scale-105 transition-transform duration-200 cursor-default`}
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-xl ${s.bg} border ${s.border} backdrop-blur-sm cursor-default hover:scale-105 transition-transform duration-200`}
               >
-                <div className={`p-1.5 rounded-lg sm:rounded-xl ${s.bg}`}>
-                  <s.icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${s.color}`} />
+                <div className={`p-1.5 rounded-lg ${s.bg}`}>
+                  <s.icon className={`w-3.5 h-3.5 ${s.color}`} />
                 </div>
                 <div className="text-left">
-                  <p className={`text-sm sm:text-base font-extrabold ${s.color} leading-none tabular-nums`}>{s.value}</p>
-                  <p className="text-[10px] sm:text-[11px] text-slate-500 leading-none mt-0.5 font-medium">{s.label}</p>
+                  <p className={`text-sm font-extrabold ${s.color} leading-none tabular-nums`}>{s.value}</p>
+                  <p className="text-[10px] text-slate-500 leading-none mt-1 font-medium">{s.label}</p>
                 </div>
               </div>
             ))}
