@@ -96,6 +96,7 @@ export async function POST(req: NextRequest) {
                 fileSize: f.size ? parseInt(f.size) : 0,
                 driveFileId: f.id,
                 driveWebLink: f.webViewLink,
+                thumbnailUrl: f.thumbnailLink?.replace(/=s\d+/, "=s800"),
               }))
             }
           }
@@ -131,7 +132,7 @@ export async function POST(req: NextRequest) {
         // Create record
         const newFile = await prisma.mediaFile.create({
           data: {
-            title: dFile.name,
+            title: dFile.name.replace(/\.[^/.]+$/, ""),
             filename: dFile.name,
             filepath: "external",
             fileType: dFile.mimeType,

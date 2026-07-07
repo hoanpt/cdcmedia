@@ -8,7 +8,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id } = await params;
   
   try {
-    const file = await prisma.mediaFile.findUnique({ where: { id } });
+    let file: any = await prisma.mediaFile.findUnique({ where: { id } });
+    if (!file) {
+      const attachment = await prisma.mediaAttachment.findUnique({ where: { id } });
+      if (attachment) {
+        file = attachment;
+      }
+    }
+    
     if (!file) return new NextResponse("Not Found", { status: 404 });
 
     // If we have a Google Drive thumbnailLink, redirect to it (higher resolution trick: replace =s220 with =s800)
@@ -33,7 +40,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           });
         }
       }
-    } else if (file.filepath?.startsWith("gdrive://") && file.fileType.startsWith("image/")) {
+    } else if ((file.filepath?.startsWith("gdrive://") || file.filepath === "external") && file.fileType.startsWith("image/")) {
       // For images directly uploaded to Drive that don't have a thumbnail ready yet,
       // fallback to streaming the full image as a preview. (It will be cached by CDN).
       const downloadUrl = new URL(`/api/download/${id}?preview=true`, req.url).toString();
