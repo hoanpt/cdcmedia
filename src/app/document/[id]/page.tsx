@@ -5,6 +5,7 @@ import { FileIcon } from "@/utils/fileIcon";
 import { Download, ExternalLink, Calendar, HardDrive, Eye, Tag, AlertCircle, FileText, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import AlbumViewer from "./AlbumViewer";
+import RelatedFiles from "./RelatedFiles";
 import type { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -41,7 +42,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
       category: true,
     },
     orderBy: { createdAt: "desc" },
-    take: 5
+    take: 20
   });
 
   const downloadUrl = `/api/download/${file.id}`;
@@ -50,7 +51,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-7xl">
-      <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors mb-6">
+      <Link href="/" className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800 rounded-xl text-sm font-bold transition-colors mb-6 border border-indigo-100/50 shadow-sm">
           <ArrowLeft className="w-4 h-4" /> Quay lại kho tài liệu
         </Link>
 
@@ -132,37 +133,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         </div>
 
         {/* Related Documents Section */}
-        {relatedFiles.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <span className="w-1.5 h-6 rounded-full bg-blue-500 block"></span>
-              Tài liệu cùng chuyên mục
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {relatedFiles.map(rel => (
-                <Link key={rel.id} href={`/document/${rel.id}`} className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/5 transition-all flex flex-col h-full">
-                  <div className="aspect-[4/3] bg-slate-50 relative overflow-hidden flex items-center justify-center border-b border-slate-100">
-                    {rel.thumbnailUrl || (rel.fileType.startsWith("image/") && rel.filepath) ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={`/api/thumbnail/${rel.id}`} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    ) : (
-                      <FileIcon mimeType={rel.fileType} filename={rel.filename} className="w-12 h-12" />
-                    )}
-                  </div>
-                  <div className="p-4 flex-1 flex flex-col">
-                    <h3 className="font-bold text-slate-800 text-sm leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors mb-2">
-                      {rel.title}
-                    </h3>
-                    <div className="mt-auto flex items-center justify-between text-xs text-slate-500">
-                      <span>{formatFileSize(rel.fileSize)}</span>
-                      <span>{formatDate(rel.createdAt)}</span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-      )}
+        <RelatedFiles relatedFiles={relatedFiles as any} />
     </div>
   );
 }
