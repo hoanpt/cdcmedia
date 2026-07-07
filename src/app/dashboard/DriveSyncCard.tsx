@@ -10,6 +10,7 @@ interface Props {
 
 export default function DriveSyncCard({ onSynced, isAdmin }: Props) {
   const [folderId, setFolderId] = useState("");
+  const [tagsInput, setTagsInput] = useState("");
   const [isAlbum, setIsAlbum] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [result, setResult] = useState<{ synced: number, total: number } | null>(null);
@@ -24,10 +25,11 @@ export default function DriveSyncCard({ onSynced, isAdmin }: Props) {
     setResult(null);
 
     try {
+      const tags = tagsInput.split(",").map(t => t.trim()).filter(Boolean);
       const res = await fetch("/api/sync-gdrive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ folderId: folderId.trim(), isAlbum })
+        body: JSON.stringify({ folderId: folderId.trim(), isAlbum, tags })
       });
       const data = await res.json();
 
@@ -35,6 +37,7 @@ export default function DriveSyncCard({ onSynced, isAdmin }: Props) {
         toast.success(`Đồng bộ thành công ${data.synced} file!`);
         setResult({ synced: data.synced, total: data.totalScanned });
         setFolderId("");
+        setTagsInput("");
         onSynced();
       } else {
         toast.error(data.error || "Lỗi đồng bộ");
@@ -66,6 +69,18 @@ export default function DriveSyncCard({ onSynced, isAdmin }: Props) {
             placeholder="VD: 1Mh7t7Nk506ghcDeXcRT3..."
             value={folderId}
             onChange={(e) => setFolderId(e.target.value)}
+            disabled={syncing}
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Thẻ / Hashtag (cách nhau bởi dấu phẩy)</label>
+          <input
+            type="text"
+            className="input-field text-sm"
+            placeholder="VD: Khoa Bệnh truyền nhiễm, Sốt xuất huyết..."
+            value={tagsInput}
+            onChange={(e) => setTagsInput(e.target.value)}
             disabled={syncing}
           />
         </div>

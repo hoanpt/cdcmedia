@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { folderId, isAlbum } = await req.json();
+    const { folderId, isAlbum, tags = [] } = await req.json();
     if (!folderId) {
       return NextResponse.json({ error: "Missing folderId" }, { status: 400 });
     }
@@ -29,10 +29,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "No files found in this folder", synced: 0 });
     }
 
-    // 3. Ensure Tags exist
-    const defaultTagName = "Khoa Bệnh truyền nhiễm";
-    
-    // Helper to get or create tag
+    // 3. Helper to get or create tag
     const getOrCreateTag = async (name: string) => {
       let tag = await prisma.tag.findUnique({ where: { name } });
       if (!tag) {
@@ -41,8 +38,13 @@ export async function POST(req: NextRequest) {
       return tag;
     };
 
-    const defaultTag = await getOrCreateTag(defaultTagName);
-    const folderTag = await getOrCreateTag(folderName);
+    const tagIds: string[] = [];
+    for (const tagName of tags) {
+      if (tagName) {
+        const t = await getOrCreateTag(tagName);
+        tagIds.push(t.id);
+      }
+    }
 
     // 4. Get Categories for classification
     const categories = await prisma.category.findMany();
@@ -102,14 +104,16 @@ export async function POST(req: NextRequest) {
           }
         });
 
-        const tagsToConnect = Array.from(new Set([defaultTag.id, folderTag.id]));
-        await prisma.mediaFileTag.createMany({
-          data: tagsToConnect.map(tagId => ({
-            fileId: newFile.id,
-            tagId
-          })),
-          skipDuplicates: true
-        });
+        if (tagIds.length > 0) {
+          const tagsToConnect = Array.from(new Set(tagIds));
+          await prisma.mediaFileTag.createMany({
+            data: tagsToConnect.map(tagId => ({
+              fileId: newFile.id,
+              tagId
+            })),
+            skipDuplicates: true
+          });
+        }
 
         syncedCount = validFiles.length;
       }
@@ -147,14 +151,16 @@ export async function POST(req: NextRequest) {
         });
 
         // Attach tags
-        const tagsToConnect = Array.from(new Set([defaultTag.id, folderTag.id]));
-        await prisma.mediaFileTag.createMany({
-          data: tagsToConnect.map(tagId => ({
-            fileId: newFile.id,
-            tagId
-          })),
-          skipDuplicates: true
-        });
+        if (tagIds.length > 0) {
+          const tagsToConnect = Array.from(new Set(tagIds));
+          await prisma.mediaFileTag.createMany({
+            data: tagsToConnect.map(tagId => ({
+              fileId: newFile.id,
+              tagId
+            })),
+            skipDuplicates: true
+          });
+        }
 
         syncedCount++;
       }
