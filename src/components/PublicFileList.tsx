@@ -213,63 +213,7 @@ export default function PublicFileList({ files, categories }: Props) {
           )}
         </div>
 
-        {showFilters && (
-          <div className="card mb-5 flex flex-wrap gap-4">
-            {/* Type filter */}
-            <div className="space-y-1.5">
-              <p className="text-xs font-semibold text-slate-500">Loại file</p>
-              <div className="flex flex-wrap gap-1.5">
-                {FILE_TYPE_FILTERS.map((t) => (
-                  <button
-                    key={t.value}
-                    onClick={() => setTypeFilter(t.value)}
-                    className={clsx(
-                      "px-3 py-1 rounded-full text-xs font-medium transition-all",
-                      typeFilter === t.value
-                        ? "bg-blue-600 text-white"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    )}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            </div>
 
-            {/* Tag filter */}
-            {allTags.length > 0 && (
-              <div className="space-y-1.5">
-                <p className="text-xs font-semibold text-slate-500 flex items-center gap-1">
-                  <Tag className="w-3 h-3" /> Thẻ
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {(showAllTags ? allTags : allTags.slice(0, 15)).map((tag) => (
-                    <button
-                      key={tag.id}
-                      onClick={() => setSelectedTag(selectedTag === tag.lowerName ? "" : tag.lowerName)}
-                      className={clsx(
-                        "px-3 py-1 rounded-full text-xs font-medium transition-all",
-                        selectedTag === tag.lowerName
-                          ? "bg-indigo-600 text-white"
-                          : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
-                      )}
-                    >
-                      #{tag.name}
-                    </button>
-                  ))}
-                  {allTags.length > 15 && (
-                    <button
-                      onClick={() => setShowAllTags(!showAllTags)}
-                      className="px-3 py-1 rounded-full text-xs font-medium transition-all bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    >
-                      {showAllTags ? "Thu gọn" : `Xem thêm (${allTags.length - 15})`}
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Mobile category */}
         <div className="lg:hidden mb-6">
@@ -402,6 +346,65 @@ export default function PublicFileList({ files, categories }: Props) {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Filters moved below grid */}
+        {showFilters && (
+          <div className="card mt-6 flex flex-wrap gap-4">
+            {/* Type filter */}
+            <div className="space-y-1.5">
+              <p className="text-xs font-semibold text-slate-500">Loại file</p>
+              <div className="flex flex-wrap gap-1.5">
+                {FILE_TYPE_FILTERS.map((t) => (
+                  <button
+                    key={t.value}
+                    onClick={() => setTypeFilter(t.value)}
+                    className={clsx(
+                      "px-3 py-1 rounded-full text-xs font-medium transition-all",
+                      typeFilter === t.value
+                        ? "bg-blue-600 text-white"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    )}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Tag filter */}
+            {allTags.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                  <Tag className="w-3 h-3" /> Thẻ
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(showAllTags ? allTags : allTags.slice(0, 15)).map((tag) => (
+                    <button
+                      key={tag.id}
+                      onClick={() => setSelectedTag(selectedTag === tag.lowerName ? "" : tag.lowerName)}
+                      className={clsx(
+                        "px-3 py-1 rounded-full text-xs font-medium transition-all",
+                        selectedTag === tag.lowerName
+                          ? "bg-indigo-600 text-white"
+                          : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
+                      )}
+                    >
+                      #{tag.name}
+                    </button>
+                  ))}
+                  {allTags.length > 15 && (
+                    <button
+                      onClick={() => setShowAllTags(!showAllTags)}
+                      className="px-3 py-1 rounded-full text-xs font-medium transition-all bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    >
+                      {showAllTags ? "Thu gọn" : `Xem thêm (${allTags.length - 15})`}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
