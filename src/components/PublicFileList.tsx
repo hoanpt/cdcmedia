@@ -287,7 +287,7 @@ export default function PublicFileList({ files, categories }: Props) {
             </div>
           ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-            {filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((file) => (
+            {filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((file) => (
               <div
                 key={file.id}
                 className="card border border-slate-200/60 hover:border-blue-200/80 hover:shadow-lg hover:-translate-y-1 flex flex-col gap-3.5 p-4 animate-fade-in transition-all duration-300"
