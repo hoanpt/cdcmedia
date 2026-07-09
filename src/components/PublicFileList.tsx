@@ -319,15 +319,15 @@ export default function PublicFileList({ files, categories }: Props) {
                     </div>
                   </div>
                   
-                  <div className="min-w-0 flex-1 flex flex-col items-start">
+                  <div className="min-w-0 flex-1 flex flex-col items-start overflow-hidden">
                     <span
-                      className="text-[9px] font-bold px-1.5 py-0.5 rounded text-white tracking-wider uppercase mb-1 line-clamp-1"
+                      className="text-[9px] font-bold px-1.5 py-0.5 rounded text-white tracking-wider uppercase mb-1 truncate max-w-full inline-block"
                       style={{ backgroundColor: file.category.color ?? "#3B82F6" }}
                     >
                       {file.category.name}
                     </span>
-                    <h3 className="font-semibold text-slate-800 text-[13px] leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors" title={file.title}>
-                      {file.title}
+                    <h3 className="font-semibold text-slate-800 text-[13px] leading-snug w-full truncate group-hover:text-blue-600 transition-colors" title={file.title}>
+                      {file.title.length > 45 ? file.title.substring(0, 45) + "..." : file.title}
                     </h3>
                   </div>
                 </div>
@@ -371,14 +371,14 @@ export default function PublicFileList({ files, categories }: Props) {
                   <div className="flex gap-2 mt-2.5">
                     <Link
                       href={`/document/${file.id}`}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold py-1.5 transition"
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold py-2 transition shadow-sm"
                     >
                       <Eye className="w-3.5 h-3.5" /> Chi tiết
                     </Link>
                     <a
                       href={`/api/download/${file.id}`}
                       download
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 bg-blue-50/50 hover:bg-blue-600 hover:text-white text-blue-600 rounded-lg text-xs font-semibold py-1.5 transition"
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 bg-[#1D78B8] hover:bg-[#0d5485] text-white rounded-lg text-xs font-bold py-2 transition shadow-sm"
                     >
                       <Download className="w-3.5 h-3.5" /> Tải xuống
                     </a>
