@@ -290,22 +290,23 @@ export default function PublicFileList({ files, categories }: Props) {
               return (
               <div
                 key={file.id}
-                className="relative card border border-slate-200/60 hover:border-blue-200/80 hover:shadow-md hover:-translate-y-1 flex flex-col gap-3 p-3 animate-fade-in transition-all duration-300"
+                className="relative group bg-white border border-slate-200/70 hover:border-blue-300 hover:shadow-lg hover:-translate-y-0.5 rounded-2xl flex flex-col p-3 transition-all duration-300"
               >
                 {isNew && (
                   <div className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full z-10 shadow-sm animate-pulse border border-white">
                     NEW
                   </div>
                 )}
-                {/* Icon + title */}
-                <div className="flex items-start gap-2.5">
-                  <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden relative border border-slate-200/50">
+                
+                {/* Header: Icon + Title */}
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden relative border border-slate-100">
                     {(file.thumbnailUrl || (file.fileType.startsWith("image/") && file.filepath !== "external")) ? (
                       <Image 
                         src={`/api/thumbnail/${file.id}`} 
                         alt="thumbnail" 
-                        width={48}
-                        height={48}
+                        width={40}
+                        height={40}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
@@ -313,75 +314,75 @@ export default function PublicFileList({ files, categories }: Props) {
                         }}
                       />
                     ) : null}
-                    <div className={`flex items-center justify-center w-full h-full text-blue-600 bg-blue-50/50 ${(file.thumbnailUrl || (file.fileType.startsWith("image/") && file.filepath !== "external")) ? 'hidden' : ''}`}>
-                      <FileIcon mimeType={file.fileType} filename={file.filename} className="w-7 h-7" />
+                    <div className={`flex items-center justify-center w-full h-full text-blue-600 bg-blue-50/30 ${(file.thumbnailUrl || (file.fileType.startsWith("image/") && file.filepath !== "external")) ? 'hidden' : ''}`}>
+                      <FileIcon mimeType={file.fileType} filename={file.filename} className="w-5 h-5" />
                     </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-slate-800 text-sm leading-snug line-clamp-2 hover:text-blue-600 transition-colors">
-                      {file.title}
-                    </h3>
+                  
+                  <div className="min-w-0 flex-1 flex flex-col items-start">
                     <span
-                      className="inline-block mt-1.5 text-[10px] px-2 py-0.5 rounded-full text-white font-semibold tracking-wider uppercase"
+                      className="text-[9px] font-bold px-1.5 py-0.5 rounded text-white tracking-wider uppercase mb-1 line-clamp-1"
                       style={{ backgroundColor: file.category.color ?? "#3B82F6" }}
                     >
                       {file.category.name}
                     </span>
+                    <h3 className="font-semibold text-slate-800 text-[13px] leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors" title={file.title}>
+                      {file.title}
+                    </h3>
                   </div>
                 </div>
-
-                {/* Description */}
-                {file.description && (
-                  <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{file.description}</p>
-                )}
 
                 {/* Tags */}
                 {file.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {file.tags.slice(0, 3).map(({ tag }) => (
-                      <span key={tag.id} className="text-[10px] px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium hover:bg-slate-200 transition-colors">
+                  <div className="flex flex-wrap gap-1 mt-2.5">
+                    {file.tags.slice(0, 2).map(({ tag }) => (
+                      <span key={tag.id} className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-50 border border-slate-100 text-slate-500 font-medium truncate max-w-[100px]">
                         #{tag.name}
                       </span>
                     ))}
-                    {file.tags.length > 3 && (
-                      <span className="text-[10px] font-bold text-slate-400 self-center">+{file.tags.length - 3}</span>
+                    {file.tags.length > 2 && (
+                      <span className="text-[10px] font-medium text-slate-400 self-center">+{file.tags.length - 2}</span>
                     )}
                   </div>
                 )}
 
-                {/* Meta */}
-                <div className="flex items-center justify-between text-[11px] text-slate-450 mt-auto pt-2.5 border-t border-slate-100/80">
-                  <span className="font-medium text-slate-400">{formatFileSize(file.fileSize)}</span>
-                  <span className="text-slate-400">{formatDate(file.createdAt)}</span>
-                  <div className="flex items-center gap-2">
-                    {file.viewCount > 0 && (
-                      <span className="flex items-center gap-1 text-slate-500 font-medium" title={`${file.viewCount} lượt xem`}>
-                        <Eye className="w-3 h-3 text-slate-400" /> {file.viewCount}
-                      </span>
-                    )}
-                    {file.downloadCount > 0 && (
-                      <span className="flex items-center gap-1 text-slate-500 font-medium" title={`${file.downloadCount} lượt tải`}>
-                        <Download className="w-3 h-3 text-slate-400" /> {file.downloadCount}
-                      </span>
+                <div className="mt-auto">
+                  {/* Meta */}
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 mt-3 pt-2.5 border-t border-slate-100">
+                    <span className="font-medium">{formatFileSize(file.fileSize)}</span>
+                    <span>{formatDate(file.createdAt)}</span>
+                    {(file.viewCount > 0 || file.downloadCount > 0) && (
+                      <div className="flex items-center gap-2">
+                        {file.viewCount > 0 && (
+                          <span className="flex items-center gap-0.5 text-slate-400" title={`${file.viewCount} lượt xem`}>
+                            <Eye className="w-3 h-3" /> {file.viewCount}
+                          </span>
+                        )}
+                        {file.downloadCount > 0 && (
+                          <span className="flex items-center gap-0.5 text-slate-400" title={`${file.downloadCount} lượt tải`}>
+                            <Download className="w-3 h-3" /> {file.downloadCount}
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
-                </div>
 
-                {/* Actions */}
-                <div className="flex gap-2 pt-1">
-                  <Link
-                    href={`/document/${file.id}`}
-                    className="btn-secondary flex-1 flex items-center justify-center gap-1.5 text-xs py-2 h-9"
-                  >
-                    <Eye className="w-3.5 h-3.5" /> Chi tiết
-                  </Link>
-                  <a
-                    href={`/api/download/${file.id}`}
-                    download
-                    className="btn-primary flex-1 flex items-center justify-center gap-1.5 text-xs py-2 h-9"
-                  >
-                    <Download className="w-3.5 h-3.5" /> Tải xuống
-                  </a>
+                  {/* Actions */}
+                  <div className="flex gap-2 mt-2.5">
+                    <Link
+                      href={`/document/${file.id}`}
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold py-1.5 transition"
+                    >
+                      <Eye className="w-3.5 h-3.5" /> Chi tiết
+                    </Link>
+                    <a
+                      href={`/api/download/${file.id}`}
+                      download
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 bg-blue-50/50 hover:bg-blue-600 hover:text-white text-blue-600 rounded-lg text-xs font-semibold py-1.5 transition"
+                    >
+                      <Download className="w-3.5 h-3.5" /> Tải xuống
+                    </a>
+                  </div>
                 </div>
               </div>
               );
