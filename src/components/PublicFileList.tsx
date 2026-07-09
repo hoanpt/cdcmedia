@@ -284,7 +284,7 @@ export default function PublicFileList({ files, categories }: Props) {
               <button onClick={clearFilters} className="text-blue-500 text-sm hover:underline mt-1">Xóa bộ lọc</button>
             </div>
           ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-5">
             {filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((file) => {
               const isNew = Date.now() - new Date(file.createdAt).getTime() < 24 * 60 * 60 * 1000;
               return (
@@ -335,13 +335,13 @@ export default function PublicFileList({ files, categories }: Props) {
                 {/* Tags */}
                 {file.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2.5">
-                    {file.tags.slice(0, 2).map(({ tag }) => (
-                      <span key={tag.id} className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-50 border border-slate-100 text-slate-500 font-medium truncate max-w-[100px]">
+                    {file.tags.slice(0, 1).map(({ tag }) => (
+                      <span key={tag.id} className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-50 border border-slate-100 text-slate-500 font-medium truncate max-w-[120px]">
                         #{tag.name}
                       </span>
                     ))}
-                    {file.tags.length > 2 && (
-                      <span className="text-[10px] font-medium text-slate-400 self-center">+{file.tags.length - 2}</span>
+                    {file.tags.length > 1 && (
+                      <span className="text-[10px] font-medium text-slate-400 self-center">+{file.tags.length - 1}</span>
                     )}
                   </div>
                 )}
