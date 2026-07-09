@@ -5,6 +5,7 @@ import { getSession } from "@/lib/auth";
 import { writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
+import sharp from "sharp";
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp", "image/svg+xml"];
@@ -24,13 +25,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Ảnh tối đa 10MB" }, { status: 400 });
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-  const filename = `${crypto.randomUUID()}.${ext}`;
+  const filename = `${crypto.randomUUID()}.webp`;
 
   const adsDir = path.join(process.cwd(), "uploads", "ads");
   if (!existsSync(adsDir)) await mkdir(adsDir, { recursive: true });
 
-  await writeFile(path.join(adsDir, filename), buffer);
+  // Nén ảnh bằng sharp và chuyển sang WebP
+  let finalBuffer = buffer;
+  try {
+    finalBuffer = await sharp(buffer)
+      .webp({ quality: 80 })
+      .toBuffer();
+  } catch (err) {
+    console.error("Lỗi nén ảnh:", err);
+  }
+
+  await writeFile(path.join(adsDir, filename), finalBuffer);
 
   return NextResponse.json({ url: `/api/uploads/ads/${filename}` }, { status: 201 });
 }

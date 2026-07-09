@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { logActivity } from "@/lib/logger";
 
-const DRIVE_KEYS = ["gdrive_client_id", "gdrive_client_secret", "gdrive_refresh_token", "gdrive_folder_id"];
+const DRIVE_KEYS = ["gdrive_client_id", "gdrive_client_secret", "gdrive_refresh_token", "gdrive_folder_id", "default_thumbnail_url"];
 const SECRET_KEYS = ["gdrive_client_secret", "gdrive_refresh_token"];
 
 export async function GET() {

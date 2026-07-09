@@ -1,4 +1,4 @@
-﻿// src/lib/auth.ts — JWT session management via jose
+// src/lib/auth.ts — JWT session management via jose
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
@@ -47,7 +47,7 @@ export async function createSession(payload: SessionPayload): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: false,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     maxAge: MAX_AGE,
     path: "/",

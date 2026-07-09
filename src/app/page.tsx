@@ -23,6 +23,7 @@ export default async function HomePage() {
         tags: { include: { tag: { select: { id: true, name: true } } } },
       },
       orderBy: { createdAt: "desc" },
+      take: 200,
     }),
     prisma.mediaFile.aggregate({ _sum: { fileSize: true }, where: { isPublic: true } }),
     prisma.mediaFile.aggregate({ _sum: { downloadCount: true }, where: { isPublic: true } }),
@@ -101,7 +102,7 @@ export default async function HomePage() {
 
       {/* File list + Sidebar */}
       <div className="flex gap-4 xl:gap-6">
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 bg-white shadow-xl shadow-slate-200/50 rounded-2xl p-4 sm:p-6 border border-slate-200/80 relative z-10">
           <PublicFileList files={files as never} categories={categories as never} />
         </div>
         <SidebarAds />

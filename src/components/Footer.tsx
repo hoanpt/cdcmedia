@@ -2,6 +2,7 @@
 "use client";
 import Link from "next/link";
 import { MapPin, Phone, Globe, Heart } from "lucide-react";
+import VisitorCounter from "./VisitorCounter";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -62,7 +63,7 @@ export default function Footer() {
               </div>
               <div className="flex items-start gap-2">
                 <MapPin className="w-3.5 h-3.5 mt-0.5 text-blue-300 shrink-0" />
-                <span>Trụ sở chính: 118 Lê Đình Lý, Phường Thanh Khê, Thành phố Đà Nẵng</span>
+                <span>118 Lê Đình Lý, Phường Thanh Khê, Thành phố Đà Nẵng</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-blue-300 shrink-0" />
@@ -83,9 +84,7 @@ export default function Footer() {
           <p>
             © {year} <span className="font-bold text-white">CDC Đà Nẵng</span>. Bản quyền thuộc về Trung tâm Kiểm soát Bệnh tật Đà Nẵng.
           </p>
-          <div className="flex items-center gap-1.5">
-            Thiết kế với <Heart className="w-3.5 h-3.5 text-red-400 fill-red-400" /> bởi IT CDC
-          </div>
+          <VisitorCounter />
         </div>
       </div>
     </footer>

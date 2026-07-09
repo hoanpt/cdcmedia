@@ -29,7 +29,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="vi" className={inter.variable}>
-      <body className="gradient-bg bg-grid min-h-screen flex flex-col">
+      <body className="bg-[#f0f4f8] bg-grid min-h-screen flex flex-col">
         <Toaster
           position="top-right"
           toastOptions={{

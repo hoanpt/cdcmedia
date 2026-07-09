@@ -4,6 +4,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 
 type Banner = {
   id: string;
@@ -56,11 +57,13 @@ export default function BannerStrip({ position, className = "", isSticky = false
       >
         {banners.map((b) => (
           <div key={b.id} className="w-full shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            {/* Sử dụng next/image để tự động nén WebP và tự động giảm kích thước */}
+            <Image
               src={b.imageUrl}
               alt={b.title}
-              className="w-full h-auto bg-white"
+              width={1200}
+              height={300}
+              className="w-full h-auto bg-white aspect-[4/1] object-cover"
               style={{ display: "block" }}
             />
           </div>

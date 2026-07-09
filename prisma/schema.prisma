@@ -67,6 +67,11 @@ model MediaFile {
   attachments   MediaAttachment[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+
+  @@index([categoryId])
+  @@index([uploaderId])
+  @@index([createdAt])
+  @@index([isPublic])
 }
 
 model MediaAttachment {

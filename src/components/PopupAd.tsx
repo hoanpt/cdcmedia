@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ExternalLink } from "lucide-react";
+import Image from "next/image";
 
 type PopupData = {
   id: string;
@@ -79,11 +80,12 @@ export default function PopupAd() {
 
             {/* Ảnh */}
             {popup.imageUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={popup.imageUrl}
                 alt={popup.title}
-                className="w-full aspect-[16/9] object-cover max-h-72"
+                width={448}
+                height={252}
+                className="w-full h-auto aspect-[16/9] object-cover max-h-72"
               />
             )}
 

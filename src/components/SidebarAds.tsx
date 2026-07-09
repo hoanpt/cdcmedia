@@ -2,6 +2,7 @@
 // Sidebar dọc chạy trượt 2 bên màn hình (Căn lề sát nội dung chính)
 "use client";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 type Ad = {
   id: string;
@@ -30,19 +31,21 @@ export default function SidebarAds() {
     <div key={ad.id} className="relative group rounded-2xl overflow-hidden shadow-md border border-slate-200/80 bg-white p-1">
       {ad.linkUrl ? (
         <a href={ad.linkUrl} target="_blank" rel="noopener noreferrer" title={ad.title} className="block w-full h-full">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={ad.imageUrl}
             alt={ad.title}
-            className="w-full aspect-[9/16] object-cover hover:scale-105 transition-transform duration-300 rounded-xl"
+            width={224}
+            height={398}
+            className="w-full h-auto aspect-[9/16] object-cover hover:scale-105 transition-transform duration-300 rounded-xl"
           />
         </a>
       ) : (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={ad.imageUrl}
           alt={ad.title}
-          className="w-full aspect-[9/16] object-cover rounded-xl"
+          width={224}
+          height={398}
+          className="w-full h-auto aspect-[9/16] object-cover rounded-xl"
         />
       )}
     </div>
@@ -53,8 +56,8 @@ export default function SidebarAds() {
       {/* Popup dọc bên TRÁI */}
       {leftAds.length > 0 && (
         <aside
-          className="hidden xl:flex flex-col gap-3 fixed top-24 w-36 2xl:w-48 z-40 animate-fade-in"
-          style={{ left: "max(12px, calc(50% - 640px - 192px - 24px))" }}
+          className="hidden min-[1650px]:flex flex-col gap-3 fixed top-24 w-44 2xl:w-56 z-40 animate-fade-in"
+          style={{ left: "max(12px, calc(50% - 640px - 224px - 24px))" }}
         >
           <div className="flex flex-col gap-3">
             {leftAds.map(renderAdCard)}
@@ -65,8 +68,8 @@ export default function SidebarAds() {
       {/* Popup dọc bên PHẢI */}
       {rightAds.length > 0 && (
         <aside
-          className="hidden xl:flex flex-col gap-3 fixed top-24 w-36 2xl:w-48 z-40 animate-fade-in"
-          style={{ right: "max(12px, calc(50% - 640px - 192px - 24px))" }}
+          className="hidden min-[1650px]:flex flex-col gap-3 fixed top-24 w-44 2xl:w-56 z-40 animate-fade-in"
+          style={{ right: "max(12px, calc(50% - 640px - 224px - 24px))" }}
         >
           <div className="flex flex-col gap-3">
             {rightAds.map(renderAdCard)}

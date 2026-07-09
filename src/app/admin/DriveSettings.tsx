@@ -60,6 +60,18 @@ export default function DriveSettings() {
     else toast.error("Không thể kết nối: " + (data.error ?? ""));
   }
 
+  async function handleSaveThumbnail() {
+    setSaving(true);
+    const res = await fetch("/api/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ default_thumbnail_url: settings.default_thumbnail_url }),
+    });
+    setSaving(false);
+    if (res.ok) toast.success("Đã lưu cấu hình ảnh bìa thành công!");
+    else toast.error("Lỗi lưu cài đặt");
+  }
+
   function formatGB(bytes?: number) {
     if (!bytes) return "0 GB";
     return (bytes / 1024 / 1024 / 1024).toFixed(2) + " GB";
@@ -77,8 +89,8 @@ export default function DriveSettings() {
       const res = await fetch("/api/upload-image", { method: "POST", body: fd });
       const data = await res.json();
       if (res.ok) {
-        setSettings((s) => ({ ...s, default_thumbnail_url: data.url }));
-        toast.success("Tải ảnh bìa thành công! Đừng quên bấm Lưu cài đặt.");
+        setSettings({ ...settings, default_thumbnail_url: data.url });
+        toast.success("Tải ảnh lên thành công! Bấm 'Lưu ảnh bìa' để áp dụng.");
       } else toast.error(data.error || "Lỗi upload");
     } catch {
       toast.error("Lỗi kết nối");
@@ -118,10 +130,15 @@ export default function DriveSettings() {
             )}
           </div>
           <div>
-            <label className="btn-secondary px-4 py-2 cursor-pointer inline-flex items-center gap-2">
-              <Cloud className="w-4 h-4" /> Chọn ảnh tải lên
-              <input type="file" className="hidden" accept="image/*" onChange={handleUploadThumbnail} disabled={saving} />
-            </label>
+            <div className="flex flex-col gap-2">
+              <label className="btn-secondary px-4 py-2 cursor-pointer inline-flex items-center justify-center gap-2">
+                <Cloud className="w-4 h-4" /> Chọn ảnh tải lên
+                <input type="file" className="hidden" accept="image/*" onChange={handleUploadThumbnail} disabled={saving} />
+              </label>
+              <button type="button" onClick={handleSaveThumbnail} disabled={saving} className="btn-primary px-4 py-2 flex items-center justify-center gap-2">
+                <Save className="w-4 h-4" /> Lưu ảnh bìa
+              </button>
+            </div>
           </div>
         </div>
       </div>

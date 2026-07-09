@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { Search, Filter, Download, Eye, SlidersHorizontal, Tag, X } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { FileIcon, getFileCategoryLabel } from "@/utils/fileIcon";
 import { formatFileSize, formatDate } from "@/utils/format";
 import type { CategoryWithCount, FileWithRelations } from "@/types";
@@ -32,7 +33,29 @@ export default function PublicFileList({ files, categories }: Props) {
   const [showFilters, setShowFilters] = useState(true);
   const [showAllTags, setShowAllTags] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
+  const itemsPerPage = 12;
+
+  const sortedFiles = useMemo(() => {
+    const now = Date.now();
+    const newFiles: typeof files = [];
+    const oldFiles: typeof files = [];
+    files.forEach(f => {
+      if (now - new Date(f.createdAt).getTime() < 24 * 60 * 60 * 1000) {
+        newFiles.push(f);
+      } else {
+        oldFiles.push(f);
+      }
+    });
+    // Shuffle oldFiles
+    for (let i = oldFiles.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [oldFiles[i], oldFiles[j]] = [oldFiles[j], oldFiles[i]];
+    }
+    // Sort newFiles by newest first
+    newFiles.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    
+    return [...newFiles, ...oldFiles];
+  }, [files]);
 
   // Collect all tags from files (case-insensitive, sorted by frequency)
   const allTags = useMemo(() => {
@@ -64,7 +87,7 @@ export default function PublicFileList({ files, categories }: Props) {
   }, [files]);
 
   const filtered = useMemo(() => {
-    return files.filter((f) => {
+    return sortedFiles.filter((f) => {
       if (selectedCategory && f.categoryId !== selectedCategory) return false;
       if (typeFilter) {
         const match = typeFilter.includes("/")
@@ -83,7 +106,7 @@ export default function PublicFileList({ files, categories }: Props) {
       }
       return true;
     });
-  }, [files, selectedCategory, typeFilter, selectedTag, query]);
+  }, [sortedFiles, selectedCategory, typeFilter, selectedTag, query]);
 
   const clearFilters = useCallback(() => {
     setSelectedCategory("");
@@ -261,19 +284,28 @@ export default function PublicFileList({ files, categories }: Props) {
               <button onClick={clearFilters} className="text-blue-500 text-sm hover:underline mt-1">Xóa bộ lọc</button>
             </div>
           ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-            {filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((file) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+            {filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((file) => {
+              const isNew = Date.now() - new Date(file.createdAt).getTime() < 24 * 60 * 60 * 1000;
+              return (
               <div
                 key={file.id}
-                className="card border border-slate-200/60 hover:border-blue-200/80 hover:shadow-lg hover:-translate-y-1 flex flex-col gap-3.5 p-4 animate-fade-in transition-all duration-300"
+                className="relative card border border-slate-200/60 hover:border-blue-200/80 hover:shadow-md hover:-translate-y-1 flex flex-col gap-3 p-3 animate-fade-in transition-all duration-300"
               >
+                {isNew && (
+                  <div className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full z-10 shadow-sm animate-pulse border border-white">
+                    NEW
+                  </div>
+                )}
                 {/* Icon + title */}
-                <div className="flex items-start gap-3">
-                  <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden relative border border-slate-200/50">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden relative border border-slate-200/50">
                     {(file.thumbnailUrl || (file.fileType.startsWith("image/") && file.filepath !== "external")) ? (
-                      <img 
+                      <Image 
                         src={`/api/thumbnail/${file.id}`} 
                         alt="thumbnail" 
+                        width={48}
+                        height={48}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
@@ -352,7 +384,8 @@ export default function PublicFileList({ files, categories }: Props) {
                   </a>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

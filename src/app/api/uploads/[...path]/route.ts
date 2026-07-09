@@ -17,8 +17,14 @@ export async function GET(_: NextRequest, { params }: Params) {
   const { path: segments } = await params;
 
   // Chặn path traversal
-  const relative = segments.join("/").replace(/\.\./g, "");
-  const filePath = path.join(process.cwd(), "uploads", relative);
+  const relative = segments.join("/");
+  const uploadsDir = path.resolve(process.cwd(), "uploads");
+  const filePath = path.resolve(uploadsDir, relative);
+
+  // Đảm bảo đường dẫn tuyệt đối nằm bên trong thư mục uploads
+  if (!filePath.startsWith(uploadsDir)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   if (!existsSync(filePath)) {
     if (relative === "logo.png") {
@@ -41,8 +47,7 @@ export async function GET(_: NextRequest, { params }: Params) {
   const { size } = statSync(filePath);
 
   const fileBuffer = await readFile(filePath);
-  const isLogo = relative.toLowerCase() === "logo.png";
-  const cacheControl = isLogo ? "no-cache, no-store, must-revalidate" : "public, max-age=86400";
+  const cacheControl = "public, max-age=31536000, immutable";
   
   return new NextResponse(fileBuffer, {
     headers: {
