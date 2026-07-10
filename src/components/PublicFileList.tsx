@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo } from "react";
 import { Search, Filter, Download, Eye, SlidersHorizontal, Tag, X, Film, Mic, Image as ImageIcon, FileText } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { FileIcon, getFileCategoryLabel } from "@/utils/fileIcon";
 import { formatFileSize, formatDate } from "@/utils/format";
 import type { CategoryWithCount, FileWithRelations } from "@/types";
@@ -146,40 +147,51 @@ export default function PublicFileList({ files, categories }: Props) {
   return (
     <div className="flex flex-col gap-4 lg:gap-6">
       {/* Horizontal Group Menu */}
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide border-b border-slate-100">
+      <div className="flex gap-2 overflow-x-auto pb-3 mb-2 scrollbar-hide border-b border-slate-100">
         <button
           onClick={() => setSelectedGroup("")}
           className={clsx(
-            "shrink-0 px-4 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2",
+            "relative shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-all flex items-center gap-2",
             !selectedGroup
-              ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-md shadow-blue-500/10"
+              ? "text-white"
               : "bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
           )}
         >
-          Tất cả phân hệ
-          <span className={clsx("text-xs font-bold px-2 py-0.5 rounded-full", !selectedGroup ? "bg-white/20 text-white" : "bg-white text-slate-500 border border-slate-200")}>
-            {files.length}
-          </span>
+          {!selectedGroup && (
+            <motion.div
+              layoutId="active-group"
+              className="absolute inset-0 bg-gradient-to-r from-[#1D78B8] to-[#0d5485] rounded-full shadow-md"
+              initial={false}
+              transition={{ type: "spring", stiffness: 500, damping: 35 }}
+            />
+          )}
+          <span className="relative z-10">Tất cả phân hệ</span>
         </button>
         {GROUPS.map((grp) => {
-          const groupCount = files.filter(f => f.category.group === grp.id).length;
           return (
             <button
               key={grp.id}
               onClick={() => setSelectedGroup(grp.id)}
               className={clsx(
-                "shrink-0 px-4 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2",
+                "relative shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-all flex items-center gap-2",
                 selectedGroup === grp.id
-                  ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-md shadow-blue-500/10"
+                  ? "text-white"
                   : "bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
               )}
             >
-              <span className={clsx(selectedGroup === grp.id ? "text-white" : "text-blue-500")}>
-                {grp.icon}
-              </span>
-              <span>{grp.name}</span>
-              <span className={clsx("text-xs font-bold px-2 py-0.5 rounded-full", selectedGroup === grp.id ? "bg-white/20 text-white" : "bg-white text-slate-500 border border-slate-200")}>
-                {groupCount}
+              {selectedGroup === grp.id && (
+                <motion.div
+                  layoutId="active-group"
+                  className="absolute inset-0 bg-gradient-to-r from-[#1D78B8] to-[#0d5485] rounded-full shadow-md"
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-2">
+                <span className={clsx(selectedGroup === grp.id ? "text-white" : "text-blue-500")}>
+                  {grp.icon}
+                </span>
+                <span>{grp.name}</span>
               </span>
             </button>
           );
@@ -195,26 +207,42 @@ export default function PublicFileList({ files, categories }: Props) {
             <button
               onClick={() => setSelectedCategory("")}
               className={clsx(
-                "px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-colors",
+                "relative px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors",
                 !selectedCategory
-                  ? "bg-blue-600 text-white shadow-sm"
+                  ? "text-white"
                   : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:border-slate-300"
               )}
             >
-              Tất cả
+              {!selectedCategory && (
+                <motion.div
+                  layoutId="active-category"
+                  className="absolute inset-0 bg-blue-600 rounded-full shadow-sm"
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                />
+              )}
+              <span className="relative z-10">Tất cả</span>
             </button>
             {currentGroupCategories.map(cat => (
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
                 className={clsx(
-                  "px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-colors",
+                  "relative px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors",
                   selectedCategory === cat.id
-                    ? "bg-blue-600 text-white shadow-sm"
+                    ? "text-white"
                     : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:border-slate-300"
                 )}
               >
-                {cat.name}
+                {selectedCategory === cat.id && (
+                  <motion.div
+                    layoutId="active-category"
+                    className="absolute inset-0 bg-blue-600 rounded-full shadow-sm"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                  />
+                )}
+                <span className="relative z-10">{cat.name}</span>
               </button>
             ))}
           </div>
