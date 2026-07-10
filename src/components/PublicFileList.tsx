@@ -131,7 +131,7 @@ export default function PublicFileList({ files, categories }: Props) {
       {/* Sidebar – category filter, desktop only */}
       <aside className="hidden lg:block w-56 xl:w-60 shrink-0">
         <div className="card sticky top-20 space-y-1 bg-white/70 backdrop-blur-xl border border-slate-200/50 p-4">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
             <Filter className="w-3.5 h-3.5" /> Chuyên mục
           </p>
           <button
@@ -185,6 +185,7 @@ export default function PublicFileList({ files, categories }: Props) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Tìm kiếm tài liệu…"
+              aria-label="Tìm kiếm tài liệu"
               className="input-base text-sm"
               style={{ paddingLeft: "2.25rem" }}
             />
@@ -194,6 +195,7 @@ export default function PublicFileList({ files, categories }: Props) {
           <select
             value={selectedTag}
             onChange={(e) => setSelectedTag(e.target.value)}
+            aria-label="Lọc theo Khoa/Phòng"
             className="btn-secondary text-xs sm:text-sm max-w-[220px] truncate"
             style={{ height: "42px" }}
           >
@@ -278,8 +280,8 @@ export default function PublicFileList({ files, categories }: Props) {
 
         {/* Grid */}
         {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 text-slate-400 gap-3">
-              <Search className="w-12 h-12 text-slate-200" />
+            <div className="flex flex-col items-center justify-center py-24 text-slate-500 gap-3">
+              <Search className="w-12 h-12 text-slate-300" />
               <p className="font-medium text-slate-500">Không tìm thấy tài liệu phù hợp</p>
               <button onClick={clearFilters} className="text-blue-500 text-sm hover:underline mt-1">Xóa bộ lọc</button>
             </div>
@@ -326,9 +328,9 @@ export default function PublicFileList({ files, categories }: Props) {
                     >
                       {file.category.name}
                     </span>
-                    <h3 className="font-semibold text-slate-800 text-[13px] leading-snug w-full truncate group-hover:text-blue-600 transition-colors" title={file.title}>
+                    <h2 className="font-semibold text-slate-800 text-[13px] leading-snug w-full truncate group-hover:text-blue-600 transition-colors" title={file.title}>
                       {file.title.length > 45 ? file.title.substring(0, 45) + "..." : file.title}
-                    </h3>
+                    </h2>
                   </div>
                 </div>
 
@@ -348,18 +350,18 @@ export default function PublicFileList({ files, categories }: Props) {
 
                 <div className="mt-auto">
                   {/* Meta */}
-                  <div className="flex items-center justify-between text-[10px] text-slate-400 mt-3 pt-2.5 border-t border-slate-100">
+                  <div className="flex items-center justify-between text-[10px] text-slate-500 mt-3 pt-2.5 border-t border-slate-100">
                     <span className="font-medium">{formatFileSize(file.fileSize)}</span>
                     <span>{formatDate(file.createdAt)}</span>
                     {(file.viewCount > 0 || file.downloadCount > 0) && (
                       <div className="flex items-center gap-2">
                         {file.viewCount > 0 && (
-                          <span className="flex items-center gap-0.5 text-slate-400" title={`${file.viewCount} lượt xem`}>
+                          <span className="flex items-center gap-0.5 text-slate-500" title={`${file.viewCount} lượt xem`}>
                             <Eye className="w-3 h-3" /> {file.viewCount}
                           </span>
                         )}
                         {file.downloadCount > 0 && (
-                          <span className="flex items-center gap-0.5 text-slate-400" title={`${file.downloadCount} lượt tải`}>
+                          <span className="flex items-center gap-0.5 text-slate-500" title={`${file.downloadCount} lượt tải`}>
                             <Download className="w-3 h-3" /> {file.downloadCount}
                           </span>
                         )}

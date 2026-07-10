@@ -75,12 +75,14 @@ export default function BannerStrip({ position, className = "", isSticky = false
         <>
           <button
             onClick={(e) => { e.preventDefault(); setCurrent((c) => (c - 1 + banners.length) % banners.length); }}
+            aria-label="Quảng cáo trước"
             className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/30 text-white opacity-0 group-hover:opacity-100 transition hover:bg-black/50"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={(e) => { e.preventDefault(); setCurrent((c) => (c + 1) % banners.length); }}
+            aria-label="Quảng cáo tiếp theo"
             className="absolute right-8 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/30 text-white opacity-0 group-hover:opacity-100 transition hover:bg-black/50"
           >
             <ChevronRight className="w-4 h-4" />
@@ -90,6 +92,7 @@ export default function BannerStrip({ position, className = "", isSticky = false
             {banners.map((_, i) => (
               <button
                 key={i}
+                aria-label={`Quảng cáo ${i + 1}`}
                 onClick={(e) => { e.preventDefault(); setCurrent(i); }}
                 className={`w-1.5 h-1.5 rounded-full transition-all ${i === current ? "bg-white scale-125" : "bg-white/50"}`}
               />
