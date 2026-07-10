@@ -32,6 +32,14 @@ const GROUPS = [
   { id: "DOCUMENTS", name: "Tài liệu & Biểu mẫu", icon: <FileText className="w-4 h-4" /> }
 ];
 
+const getCategoryGroup = (catName: string) => {
+  if (["Video"].includes(catName)) return "VIDEO";
+  if (["Audio"].includes(catName)) return "AUDIO";
+  if (["Hình ảnh", "Hình ảnh hoạt động", "Hình ảnh truyền thông", "Banner", "Infographic", "Poster"].includes(catName)) return "GRAPHICS";
+  if (["Tài liệu", "Tài liệu chuyên môn", "Kế hoạch", "Báo cáo", "Biểu mẫu", "Hướng dẫn"].includes(catName)) return "DOCUMENTS";
+  return null;
+};
+
 export default function PublicFileList({ files, categories }: Props) {
   const [selectedGroup, setSelectedGroup] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -97,7 +105,10 @@ export default function PublicFileList({ files, categories }: Props) {
 
   const filtered = useMemo(() => {
     return sortedFiles.filter((f) => {
-      if (selectedGroup && f.category.group !== selectedGroup) return false;
+      const cat = categories.find(c => c.id === f.categoryId);
+      const catGroup = cat?.group || getCategoryGroup(cat?.name || f.category.name);
+
+      if (selectedGroup && catGroup !== selectedGroup) return false;
       if (selectedCategory && f.categoryId !== selectedCategory) return false;
       if (typeFilter) {
         const match = typeFilter.includes("/")
@@ -142,7 +153,10 @@ export default function PublicFileList({ files, categories }: Props) {
 
   const hasActiveFilters = selectedGroup || selectedCategory || typeFilter || selectedTag || query;
 
-  const currentGroupCategories = categories.filter(c => c.group === selectedGroup);
+  const currentGroupCategories = categories.filter(c => {
+    const cGroup = c.group || getCategoryGroup(c.name);
+    return cGroup === selectedGroup;
+  });
 
   return (
     <div className="flex flex-col gap-4 lg:gap-6">
