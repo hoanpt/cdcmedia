@@ -1,7 +1,8 @@
 // src/app/admin/AdminTabs.tsx
 "use client";
 import { useState } from "react";
-import { FolderOpen, Users, CloudCog, ClipboardList, Megaphone, BarChart3 } from "lucide-react";
+import { FolderOpen, Users, CloudCog, ClipboardList, Megaphone, BarChart3, Layers } from "lucide-react";
+import ManageGroups from "./ManageGroups";
 import ManageCategories from "./ManageCategories";
 import ManageUsers from "./ManageUsers";
 import DriveSettings from "./DriveSettings";
@@ -12,6 +13,7 @@ import { clsx } from "clsx";
 
 const TABS = [
   { id: "analytics", label: "Thống kê", icon: BarChart3 },
+  { id: "groups", label: "Phân hệ", icon: Layers },
   { id: "categories", label: "Chuyên mục", icon: FolderOpen },
   { id: "users", label: "Tài khoản", icon: Users },
   { id: "ads", label: "Truyền thông", icon: Megaphone },
@@ -46,6 +48,7 @@ export default function AdminTabs() {
       {/* Panel */}
       <div>
         {active === "analytics" && <Analytics />}
+        {active === "groups" && <ManageGroups />}
         {active === "categories" && <ManageCategories />}
         {active === "users" && <ManageUsers />}
         {active === "ads" && <ManageAds />}

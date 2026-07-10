@@ -2,6 +2,7 @@
 "use client";
 import { useState, useCallback, useMemo } from "react";
 import { Search, Filter, Download, Eye, SlidersHorizontal, Tag, X, Film, Mic, Image as ImageIcon, FileText } from "lucide-react";
+import * as Icons from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -10,9 +11,16 @@ import { formatFileSize, formatDate } from "@/utils/format";
 import type { CategoryWithCount, FileWithRelations } from "@/types";
 import { clsx } from "clsx";
 
+interface Group {
+  id: string;
+  name: string;
+  icon: string;
+}
+
 interface Props {
   files: FileWithRelations[];
   categories: CategoryWithCount[];
+  groups: Group[];
 }
 
 const FILE_TYPE_FILTERS = [
@@ -25,23 +33,20 @@ const FILE_TYPE_FILTERS = [
   { value: "presentation", label: "PowerPoint" },
 ];
 
-const GROUPS = [
-  { id: "VIDEO", name: "Video", icon: <Film className="w-4 h-4" /> },
-  { id: "AUDIO", name: "Âm thanh", icon: <Mic className="w-4 h-4" /> },
-  { id: "GRAPHICS", name: "Hình ảnh & Thiết kế", icon: <ImageIcon className="w-4 h-4" /> },
-  { id: "DOCUMENTS", name: "Tài liệu & Biểu mẫu", icon: <FileText className="w-4 h-4" /> }
-];
-
-const getCategoryGroup = (catName: string) => {
-  if (!catName) return "DOCUMENTS";
+const getCategoryGroup = (catName: string, availableGroups: Group[]) => {
+  if (!catName || !availableGroups || availableGroups.length === 0) return null;
   const lower = catName.toLowerCase();
-  if (lower.includes("video") || lower.includes("clip") || lower.includes("phim")) return "VIDEO";
-  if (lower.includes("audio") || lower.includes("âm thanh") || lower.includes("mp3")) return "AUDIO";
-  if (lower.includes("hình ảnh") || lower.includes("ảnh") || lower.includes("banner") || lower.includes("poster") || lower.includes("infographic")) return "GRAPHICS";
-  return "DOCUMENTS"; // Default to Documents
+  
+  if ((lower.includes("video") || lower.includes("clip") || lower.includes("phim")) && availableGroups.some(g => g.id === "VIDEO")) return "VIDEO";
+  if ((lower.includes("audio") || lower.includes("âm thanh") || lower.includes("mp3")) && availableGroups.some(g => g.id === "AUDIO")) return "AUDIO";
+  if ((lower.includes("hình ảnh") || lower.includes("ảnh") || lower.includes("banner") || lower.includes("poster") || lower.includes("infographic")) && availableGroups.some(g => g.id === "GRAPHICS")) return "GRAPHICS";
+  
+  // Mặc định trả về phân hệ cuối cùng (thường là Tài liệu) hoặc phân hệ đầu tiên
+  const docGroup = availableGroups.find(g => g.id === "DOCUMENTS");
+  return docGroup ? docGroup.id : availableGroups[availableGroups.length - 1].id;
 };
 
-export default function PublicFileList({ files, categories }: Props) {
+export default function PublicFileList({ files, categories, groups }: Props) {
   const [selectedGroup, setSelectedGroup] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [query, setQuery] = useState("");
@@ -107,7 +112,7 @@ export default function PublicFileList({ files, categories }: Props) {
   const filtered = useMemo(() => {
     return sortedFiles.filter((f) => {
       const cat = categories.find(c => c.id === f.categoryId);
-      const catGroup = cat?.group || getCategoryGroup(cat?.name || f.category.name);
+      const catGroup = cat?.group || getCategoryGroup(cat?.name || f.category.name, groups);
 
       if (selectedGroup && catGroup !== selectedGroup) return false;
       if (selectedCategory && f.categoryId !== selectedCategory) return false;
@@ -155,7 +160,7 @@ export default function PublicFileList({ files, categories }: Props) {
   const hasActiveFilters = selectedGroup || selectedCategory || typeFilter || selectedTag || query;
 
   const currentGroupCategories = categories.filter(c => {
-    const cGroup = c.group || getCategoryGroup(c.name);
+    const cGroup = c.group || getCategoryGroup(c.name, groups);
     return cGroup === selectedGroup;
   });
 
@@ -182,7 +187,8 @@ export default function PublicFileList({ files, categories }: Props) {
           )}
           <span className="relative z-10">Tất cả phân hệ</span>
         </button>
-        {GROUPS.map((grp) => {
+        {groups.map((grp) => {
+          const IconComponent = (Icons as any)[grp.icon] || Icons.Folder;
           return (
             <button
               key={grp.id}
@@ -204,7 +210,7 @@ export default function PublicFileList({ files, categories }: Props) {
               )}
               <span className="relative z-10 flex items-center gap-2">
                 <span className={clsx(selectedGroup === grp.id ? "text-white" : "text-blue-500")}>
-                  {grp.icon}
+                  <IconComponent className="w-4 h-4" />
                 </span>
                 <span>{grp.name}</span>
               </span>

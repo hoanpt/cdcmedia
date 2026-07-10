@@ -11,17 +11,17 @@ interface Category {
   _count: { files: number };
 }
 
-const GROUPS = [
-  { id: "VIDEO", name: "Thư viện Video" },
-  { id: "AUDIO", name: "Âm thanh & Podcast" },
-  { id: "GRAPHICS", name: "Ấn phẩm & Hình ảnh" },
-  { id: "DOCUMENTS", name: "Tài liệu & Khai thác dữ liệu" }
-];
+interface Group {
+  id: string;
+  name: string;
+  icon: string;
+}
 
 const COLORS = ["#3B82F6","#6366F1","#8B5CF6","#EC4899","#EF4444","#F97316","#EAB308","#22C55E","#14B8A6","#06B6D4","#64748B"];
 
 export default function ManageCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -31,15 +31,25 @@ export default function ManageCategories() {
   const [group, setGroup] = useState("DOCUMENTS");
   const [sortOrder, setSortOrder] = useState("0");
 
-  async function fetchCategories() {
+  async function fetchCategoriesAndGroups() {
     setLoading(true);
-    const res = await fetch("/api/categories");
-    const data = await res.json();
-    setCategories(data.categories ?? []);
-    setLoading(false);
+    try {
+      const [resCat, resGrp] = await Promise.all([
+        fetch("/api/categories"),
+        fetch("/api/groups")
+      ]);
+      const dataCat = await resCat.json();
+      const dataGrp = await resGrp.json();
+      setCategories(dataCat.categories ?? []);
+      setGroups(dataGrp.groups ?? []);
+    } catch (err) {
+      toast.error("Lỗi tải dữ liệu");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  useEffect(() => { fetchCategories(); }, []);
+  useEffect(() => { fetchCategoriesAndGroups(); }, []);
 
   function openCreate() {
     setEditId(null); setName(""); setDescription(""); setColor(COLORS[0]); setGroup("DOCUMENTS"); setSortOrder("0");
@@ -62,7 +72,7 @@ export default function ManageCategories() {
     if (res.ok) {
       toast.success(editId ? "Đã cập nhật chuyên mục" : "Đã tạo chuyên mục");
       setShowForm(false);
-      fetchCategories();
+      fetchCategoriesAndGroups();
     } else {
       toast.error(data.error ?? "Lỗi");
     }
@@ -71,7 +81,7 @@ export default function ManageCategories() {
   async function handleDelete(cat: Category) {
     if (!confirm(`Xóa chuyên mục "${cat.name}"? Sẽ xóa ${cat._count.files} tài liệu liên quan.`)) return;
     const res = await fetch(`/api/categories/${cat.id}`, { method: "DELETE" });
-    if (res.ok) { toast.success("Đã xóa chuyên mục"); fetchCategories(); }
+    if (res.ok) { toast.success("Đã xóa chuyên mục"); fetchCategoriesAndGroups(); }
     else { const d = await res.json(); toast.error(d.error ?? "Lỗi xóa"); }
   }
 
@@ -92,7 +102,7 @@ export default function ManageCategories() {
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Tên chuyên mục *" className="input-base text-sm" />
             <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Mô tả" className="input-base text-sm" />
             <select value={group} onChange={(e) => setGroup(e.target.value)} className="input-base text-sm cursor-pointer">
-              {GROUPS.map(g => (
+              {groups.map(g => (
                 <option key={g.id} value={g.id}>{g.name}</option>
               ))}
             </select>
@@ -144,7 +154,7 @@ export default function ManageCategories() {
                   {cat.name} 
                   {cat.group && (
                     <span className="ml-2 px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold">
-                      {GROUPS.find(g => g.id === cat.group)?.name || cat.group}
+                      {groups.find(g => g.id === cat.group)?.name || cat.group}
                     </span>
                   )}
                 </p>

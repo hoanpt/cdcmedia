@@ -10,7 +10,7 @@ import { FileArchive, FolderOpen, Download, HardDrive, Shield } from "lucide-rea
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [categories, files, storageAgg, downloadAgg, useDrive] = await Promise.all([
+  const [categories, files, storageAgg, downloadAgg, useDrive, appGroupsSetting] = await Promise.all([
     prisma.category.findMany({
       include: { _count: { select: { files: { where: { isPublic: true } } } } },
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
@@ -28,7 +28,15 @@ export default async function HomePage() {
     prisma.mediaFile.aggregate({ _sum: { fileSize: true }, where: { isPublic: true } }),
     prisma.mediaFile.aggregate({ _sum: { downloadCount: true }, where: { isPublic: true } }),
     isDriveConfigured(),
+    prisma.appSetting.findUnique({ where: { key: "APP_GROUPS" } }),
   ]);
+
+  const groups = appGroupsSetting ? JSON.parse(appGroupsSetting.value) : [
+    { id: "VIDEO", name: "Thư viện Video", icon: "Film" },
+    { id: "AUDIO", name: "Âm thanh & Podcast", icon: "Mic" },
+    { id: "GRAPHICS", name: "Ấn phẩm & Hình ảnh", icon: "ImageIcon" },
+    { id: "DOCUMENTS", name: "Tài liệu & Khai thác dữ liệu", icon: "FileText" }
+  ];
 
   const totalSize = storageAgg._sum.fileSize ?? 0;
   const totalDownloads = downloadAgg._sum.downloadCount ?? 0;
@@ -103,7 +111,7 @@ export default async function HomePage() {
       {/* File list + Sidebar */}
       <div className="flex gap-4 xl:gap-6">
         <div className="flex-1 min-w-0 bg-white shadow-xl shadow-slate-200/50 rounded-2xl p-4 sm:p-6 border border-slate-200/80 relative z-10">
-          <PublicFileList files={files as never} categories={categories as never} />
+          <PublicFileList files={files as never} categories={categories as never} groups={groups} />
         </div>
         <SidebarAds />
       </div>
