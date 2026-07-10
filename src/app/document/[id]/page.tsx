@@ -71,7 +71,9 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
                 <div>
                   <div className="flex items-start gap-3 mb-4">
                     <FileIcon mimeType={file.fileType} filename={file.filename} className="w-10 h-10 shrink-0 mt-1" />
-                    <h1 className="font-bold text-2xl text-slate-800 leading-tight">{file.title}</h1>
+                    <div className="min-w-0 flex-1">
+                      <h1 className="font-bold text-2xl text-slate-800 leading-tight break-words">{file.title}</h1>
+                    </div>
                   </div>
                   <div className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-white mb-6" style={{ backgroundColor: file.category.color ?? "#3B82F6" }}>
                     {file.category.name}
