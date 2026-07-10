@@ -452,27 +452,6 @@ export default function PublicFileList({ files, categories }: Props) {
         {/* Filters moved below grid */}
         {showFilters && (
           <div className="card mt-6 flex flex-wrap gap-4">
-            {/* Type filter */}
-            <div className="space-y-1.5">
-              <p className="text-xs font-semibold text-slate-500">Loại file</p>
-              <div className="flex flex-wrap gap-1.5">
-                {FILE_TYPE_FILTERS.map((t) => (
-                  <button
-                    key={t.value}
-                    onClick={() => setTypeFilter(t.value)}
-                    className={clsx(
-                      "px-3 py-1 rounded-full text-xs font-medium transition-all",
-                      typeFilter === t.value
-                        ? "bg-blue-600 text-white"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    )}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Tag filter */}
             {allTags.length > 0 && (
               <div className="space-y-1.5">
