@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getAuthUser } from "@/utils/auth";
-import { ActivityLogger } from "@/utils/activityLogger";
+import { getAuthUser } from "@/lib/auth";
+import { logActivity } from "@/lib/logger";
 
 export async function PATCH(request: Request) {
   try {
@@ -40,7 +40,7 @@ export async function PATCH(request: Request) {
     });
 
     // Log the activity
-    await ActivityLogger.log(user.id, "UPDATE", `Bulk moved ${result.count} files to category ${category.name}`);
+    await logActivity(user.id, "UPDATE", `Bulk moved ${result.count} files to category ${category.name}`);
 
     return NextResponse.json({ success: true, count: result.count });
   } catch (error) {
