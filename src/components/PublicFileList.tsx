@@ -133,7 +133,7 @@ export default function PublicFileList({ files, categories, groups }: Props) {
       }
       return true;
     });
-  }, [sortedFiles, selectedCategory, typeFilter, selectedTag, query]);
+  }, [sortedFiles, selectedGroup, selectedCategory, typeFilter, selectedTag, query, categories, groups]);
 
   const clearFilters = useCallback(() => {
     setSelectedGroup("");
