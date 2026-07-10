@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getAuthUser } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { logActivity } from "@/lib/logger";
 
 export async function PATCH(request: Request) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getSession();
     if (!user || user.role === "VIEWER") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -32,7 +32,7 @@ export async function PATCH(request: Request) {
     // Admin can update any file, Uploader can only update their own files
     const updateCondition = user.role === "ADMIN" 
       ? { id: { in: fileIds } } 
-      : { id: { in: fileIds }, uploaderId: user.id };
+      : { id: { in: fileIds }, uploaderId: user.userId };
 
     const result = await prisma.mediaFile.updateMany({
       where: updateCondition,
@@ -40,7 +40,7 @@ export async function PATCH(request: Request) {
     });
 
     // Log the activity
-    await logActivity(user.id, "UPDATE", `Bulk moved ${result.count} files to category ${category.name}`);
+    await logActivity(user.userId, "UPDATE", `Bulk moved ${result.count} files to category ${category.name}`);
 
     return NextResponse.json({ success: true, count: result.count });
   } catch (error) {
