@@ -33,11 +33,12 @@ const GROUPS = [
 ];
 
 const getCategoryGroup = (catName: string) => {
-  if (["Video"].includes(catName)) return "VIDEO";
-  if (["Audio"].includes(catName)) return "AUDIO";
-  if (["Hình ảnh", "Hình ảnh hoạt động", "Hình ảnh truyền thông", "Banner", "Infographic", "Poster"].includes(catName)) return "GRAPHICS";
-  if (["Tài liệu", "Tài liệu chuyên môn", "Kế hoạch", "Báo cáo", "Biểu mẫu", "Hướng dẫn"].includes(catName)) return "DOCUMENTS";
-  return null;
+  if (!catName) return "DOCUMENTS";
+  const lower = catName.toLowerCase();
+  if (lower.includes("video") || lower.includes("clip") || lower.includes("phim")) return "VIDEO";
+  if (lower.includes("audio") || lower.includes("âm thanh") || lower.includes("mp3")) return "AUDIO";
+  if (lower.includes("hình ảnh") || lower.includes("ảnh") || lower.includes("banner") || lower.includes("poster") || lower.includes("infographic")) return "GRAPHICS";
+  return "DOCUMENTS"; // Default to Documents
 };
 
 export default function PublicFileList({ files, categories }: Props) {

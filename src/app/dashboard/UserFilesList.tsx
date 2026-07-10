@@ -10,6 +10,7 @@ import EditFileModal from "./EditFileModal";
 import type { FileWithRelations } from "@/types";
 
 interface Category { id: string; name: string; }
+interface Category { id: string; name: string; group?: string; color?: string; }
 interface Props {
   isAdmin: boolean;
   categories: Category[];
@@ -21,6 +22,9 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
   const [loading, setLoading] = useState(true);
   const [editingFile, setEditingFile] = useState<FileWithRelations | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
+  const [bulkCategoryId, setBulkCategoryId] = useState<string>("");
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
   const itemsPerPage = 10;
 
   const fetchFiles = useCallback(async () => {
@@ -45,6 +49,39 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
     }
   }
 
+  const handleBulkMove = async () => {
+    if (selectedFiles.size === 0 || !bulkCategoryId) return;
+    
+    const confirmMove = window.confirm(`Bạn có chắc muốn chuyển ${selectedFiles.size} tài liệu sang chuyên mục mới?`);
+    if (!confirmMove) return;
+
+    setIsBulkUpdating(true);
+    try {
+      const res = await fetch("/api/files/bulk", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileIds: Array.from(selectedFiles),
+          categoryId: bulkCategoryId
+        }),
+      });
+
+      if (res.ok) {
+        toast.success(`Đã chuyển thành công ${selectedFiles.size} tài liệu`);
+        setSelectedFiles(new Set());
+        setBulkCategoryId("");
+        fetchFiles();
+      } else {
+        const d = await res.json();
+        toast.error(d.error ?? "Lỗi chuyển chuyên mục");
+      }
+    } catch (err) {
+      toast.error("Đã xảy ra lỗi");
+    } finally {
+      setIsBulkUpdating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="card flex items-center justify-center py-16 text-slate-400 gap-2">
@@ -66,20 +103,84 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
   return (
     <>
       <div className="card overflow-hidden p-0">
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-          <h2 className="font-bold text-slate-800">
-            {isAdmin ? "Tất cả tài liệu" : "Tài liệu của bạn"}
-            <span className="ml-2 text-sm font-normal text-slate-400">({files.length})</span>
-          </h2>
-          <button onClick={fetchFiles} className="btn-secondary text-xs flex items-center gap-1">
-            <RefreshCw className="w-3 h-3" /> Làm mới
-          </button>
-        </div>
+        {selectedFiles.size > 0 ? (
+          <div className="px-5 py-3 border-b border-blue-100 bg-blue-50/50 flex flex-wrap items-center justify-between gap-3 animate-in slide-in-from-top-2">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-semibold text-blue-800 bg-blue-100 px-2 py-0.5 rounded">Đã chọn {selectedFiles.size}</span>
+              <button onClick={() => setSelectedFiles(new Set())} className="text-xs text-blue-600 hover:underline">Bỏ chọn</button>
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                value={bulkCategoryId}
+                onChange={(e) => setBulkCategoryId(e.target.value)}
+                className="input-base py-1.5 text-sm h-auto"
+              >
+                <option value="">-- Chọn chuyên mục --</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.group ? `[${c.group}] ` : ""}{c.name}
+                  </option>
+                ))}
+              </select>
+              <button 
+                onClick={handleBulkMove}
+                disabled={!bulkCategoryId || isBulkUpdating}
+                className="btn-primary py-1.5 text-sm h-auto shrink-0 flex items-center gap-1"
+              >
+                {isBulkUpdating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Pencil className="w-4 h-4" />}
+                Chuyển nhanh
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <h2 className="font-bold text-slate-800">
+              {isAdmin ? "Tất cả tài liệu" : "Tài liệu của bạn"}
+              <span className="ml-2 text-sm font-normal text-slate-400">({files.length})</span>
+            </h2>
+            <button onClick={fetchFiles} className="btn-secondary text-xs flex items-center gap-1">
+              <RefreshCw className="w-3 h-3" /> Làm mới
+            </button>
+          </div>
+        )}
 
         <div className="divide-y divide-slate-50">
+          <div className="px-5 py-3 bg-slate-50 flex items-center gap-3 border-b border-slate-100">
+            <input 
+              type="checkbox"
+              checked={
+                files.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).length > 0 &&
+                files.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).every(f => selectedFiles.has(f.id))
+              }
+              onChange={(e) => {
+                const newSet = new Set(selectedFiles);
+                const currentFiles = files.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+                if (e.target.checked) {
+                  currentFiles.forEach(f => newSet.add(f.id));
+                } else {
+                  currentFiles.forEach(f => newSet.delete(f.id));
+                }
+                setSelectedFiles(newSet);
+              }}
+              className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+            />
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tên tài liệu</span>
+          </div>
+
           {files.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((file) => (
             <div key={file.id} className="px-5 py-4 hover:bg-slate-50/50 transition-colors">
               <div className="flex items-center gap-3">
+                <input 
+                  type="checkbox"
+                  checked={selectedFiles.has(file.id)}
+                  onChange={(e) => {
+                    const newSet = new Set(selectedFiles);
+                    if (e.target.checked) newSet.add(file.id);
+                    else newSet.delete(file.id);
+                    setSelectedFiles(newSet);
+                  }}
+                  className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
                 <div className="w-10 h-10 shrink-0 rounded-lg overflow-hidden flex items-center justify-center bg-slate-100 relative">
                   {(file.thumbnailUrl || (file.fileType.startsWith("image/") && file.filepath !== "external")) ? (
                     <img 
