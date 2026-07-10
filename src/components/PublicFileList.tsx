@@ -25,10 +25,10 @@ const FILE_TYPE_FILTERS = [
 ];
 
 const GROUPS = [
-  { id: "VIDEO", name: "Thư viện Video", icon: <Film className="w-4 h-4" /> },
-  { id: "AUDIO", name: "Âm thanh & Podcast", icon: <Mic className="w-4 h-4" /> },
-  { id: "GRAPHICS", name: "Ấn phẩm & Hình ảnh", icon: <ImageIcon className="w-4 h-4" /> },
-  { id: "DOCUMENTS", name: "Tài liệu & Khai thác dữ liệu", icon: <FileText className="w-4 h-4" /> }
+  { id: "VIDEO", name: "Video", icon: <Film className="w-4 h-4" /> },
+  { id: "AUDIO", name: "Âm thanh", icon: <Mic className="w-4 h-4" /> },
+  { id: "GRAPHICS", name: "Hình ảnh & Thiết kế", icon: <ImageIcon className="w-4 h-4" /> },
+  { id: "DOCUMENTS", name: "Tài liệu & Biểu mẫu", icon: <FileText className="w-4 h-4" /> }
 ];
 
 export default function PublicFileList({ files, categories }: Props) {
@@ -146,7 +146,7 @@ export default function PublicFileList({ files, categories }: Props) {
   return (
     <div className="flex gap-4 lg:gap-6">
       {/* Sidebar – category filter, desktop only */}
-      <aside className="hidden lg:block w-56 xl:w-60 shrink-0">
+      <aside className="hidden lg:block w-52 shrink-0">
         <div className="card sticky top-20 space-y-1 bg-white/70 backdrop-blur-xl border border-slate-200/50 p-4">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
             <Filter className="w-3.5 h-3.5" /> Chuyên mục
@@ -178,11 +178,11 @@ export default function PublicFileList({ files, categories }: Props) {
                     : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
                 )}
               >
-                <span className="flex items-center gap-2 truncate">
+                <span className="flex items-center gap-2 flex-1 min-w-0">
                   <span className={clsx("shrink-0", selectedGroup === grp.id ? "text-white" : "text-blue-500")}>
                     {grp.icon}
                   </span>
-                  <span className="truncate">{grp.name}</span>
+                  <span className="text-[13px] leading-tight whitespace-normal break-words">{grp.name}</span>
                 </span>
                 <span className={clsx("text-xs font-bold px-2 py-0.5 rounded-full shrink-0", selectedGroup === grp.id ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500")}>
                   {groupCount}

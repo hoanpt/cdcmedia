@@ -18,7 +18,7 @@ export default async function HomePage() {
     prisma.mediaFile.findMany({
       where: { isPublic: true },
       include: {
-        category: { select: { id: true, name: true, color: true, icon: true } },
+        category: { select: { id: true, name: true, color: true, icon: true, group: true } },
         uploader: { select: { id: true, username: true, displayName: true } },
         tags: { include: { tag: { select: { id: true, name: true } } } },
       },
