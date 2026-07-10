@@ -5,7 +5,7 @@ import UploadFileForm from "./UploadFileForm";
 import UserFilesList from "./UserFilesList";
 import DriveSyncCard from "./DriveSyncCard";
 
-interface Category { id: string; name: string; color: string | null; }
+interface Category { id: string; name: string; color: string | null; group: string | null; }
 
 interface Props {
   categories: Category[];

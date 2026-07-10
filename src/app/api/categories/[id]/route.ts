@@ -14,13 +14,14 @@ export async function PUT(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Không có quyền" }, { status: 403 });
   }
 
-  const { name, description, color, icon, sortOrder } = await req.json();
+  const { name, description, color, icon, sortOrder, group } = await req.json();
   const updateData: Record<string, unknown> = {};
   if (name !== undefined) { updateData.name = name; updateData.slug = slugify(name); }
   if (description !== undefined) updateData.description = description;
   if (color !== undefined) updateData.color = color;
   if (icon !== undefined) updateData.icon = icon;
   if (sortOrder !== undefined) updateData.sortOrder = sortOrder;
+  if (group !== undefined) updateData.group = group;
 
   const category = await prisma.category.update({ where: { id }, data: updateData });
   await logActivity(session.userId, "UPDATE", `Cập nhật chuyên mục: "${category.name}"`);

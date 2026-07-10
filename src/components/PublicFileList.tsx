@@ -1,7 +1,7 @@
 // src/components/PublicFileList.tsx
 "use client";
 import { useState, useCallback, useMemo } from "react";
-import { Search, Filter, Download, Eye, SlidersHorizontal, Tag, X } from "lucide-react";
+import { Search, Filter, Download, Eye, SlidersHorizontal, Tag, X, Film, Mic, Image as ImageIcon, FileText } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { FileIcon, getFileCategoryLabel } from "@/utils/fileIcon";
@@ -24,7 +24,15 @@ const FILE_TYPE_FILTERS = [
   { value: "presentation", label: "PowerPoint" },
 ];
 
+const GROUPS = [
+  { id: "VIDEO", name: "Thư viện Video", icon: <Film className="w-4 h-4" /> },
+  { id: "AUDIO", name: "Âm thanh & Podcast", icon: <Mic className="w-4 h-4" /> },
+  { id: "GRAPHICS", name: "Ấn phẩm & Hình ảnh", icon: <ImageIcon className="w-4 h-4" /> },
+  { id: "DOCUMENTS", name: "Tài liệu & Khai thác dữ liệu", icon: <FileText className="w-4 h-4" /> }
+];
+
 export default function PublicFileList({ files, categories }: Props) {
+  const [selectedGroup, setSelectedGroup] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
@@ -88,6 +96,7 @@ export default function PublicFileList({ files, categories }: Props) {
 
   const filtered = useMemo(() => {
     return sortedFiles.filter((f) => {
+      if (selectedGroup && f.category.group !== selectedGroup) return false;
       if (selectedCategory && f.categoryId !== selectedCategory) return false;
       if (typeFilter) {
         const match = typeFilter.includes("/")
@@ -109,6 +118,7 @@ export default function PublicFileList({ files, categories }: Props) {
   }, [sortedFiles, selectedCategory, typeFilter, selectedTag, query]);
 
   const clearFilters = useCallback(() => {
+    setSelectedGroup("");
     setSelectedCategory("");
     setTypeFilter("");
     setSelectedTag("");
@@ -119,12 +129,19 @@ export default function PublicFileList({ files, categories }: Props) {
   // Reset page when filters change
   useMemo(() => {
     setCurrentPage(1);
-  }, [selectedCategory, typeFilter, selectedTag, query]);
+  }, [selectedGroup, selectedCategory, typeFilter, selectedTag, query]);
+
+  // Auto-select category when group changes
+  useMemo(() => {
+    setSelectedCategory("");
+  }, [selectedGroup]);
 
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const paginatedFiles = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const hasActiveFilters = selectedCategory || typeFilter || selectedTag || query;
+  const hasActiveFilters = selectedGroup || selectedCategory || typeFilter || selectedTag || query;
+
+  const currentGroupCategories = categories.filter(c => c.group === selectedGroup);
 
   return (
     <div className="flex gap-4 lg:gap-6">
@@ -135,47 +152,80 @@ export default function PublicFileList({ files, categories }: Props) {
             <Filter className="w-3.5 h-3.5" /> Chuyên mục
           </p>
           <button
-            onClick={() => setSelectedCategory("")}
+            onClick={() => setSelectedGroup("")}
             className={clsx(
               "w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-between",
-              !selectedCategory
+              !selectedGroup
                 ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-md shadow-blue-500/10"
                 : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
             )}
           >
-            <span>Tất cả</span>
-            <span className={clsx("text-xs font-bold px-2 py-0.5 rounded-full", !selectedCategory ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500")}>
+            <span>Tất cả phân hệ</span>
+            <span className={clsx("text-xs font-bold px-2 py-0.5 rounded-full", !selectedGroup ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500")}>
               {files.length}
             </span>
           </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={clsx(
-                "w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-between gap-2",
-                selectedCategory === cat.id
-                  ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-md shadow-blue-500/10"
-                  : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
-              )}
-            >
-              <span className="flex items-center gap-2 truncate">
-                <span
-                  className="w-2 h-2 rounded-full shrink-0 animate-pulse"
-                  style={{ backgroundColor: selectedCategory === cat.id ? "white" : (cat.color ?? "#3B82F6") }}
-                />
-                <span className="truncate">{cat.name}</span>
-              </span>
-              <span className={clsx("text-xs font-bold px-2 py-0.5 rounded-full shrink-0", selectedCategory === cat.id ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500")}>
-                {cat._count.files}
-              </span>
-            </button>
-          ))}
+          {GROUPS.map((grp) => {
+            const groupCount = files.filter(f => f.category.group === grp.id).length;
+            return (
+              <button
+                key={grp.id}
+                onClick={() => setSelectedGroup(grp.id)}
+                className={clsx(
+                  "w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-between gap-2",
+                  selectedGroup === grp.id
+                    ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-md shadow-blue-500/10"
+                    : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
+                )}
+              >
+                <span className="flex items-center gap-2 truncate">
+                  <span className={clsx("shrink-0", selectedGroup === grp.id ? "text-white" : "text-blue-500")}>
+                    {grp.icon}
+                  </span>
+                  <span className="truncate">{grp.name}</span>
+                </span>
+                <span className={clsx("text-xs font-bold px-2 py-0.5 rounded-full shrink-0", selectedGroup === grp.id ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500")}>
+                  {groupCount}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </aside>
 
       {/* Main content */}
       <div className="flex-1 min-w-0">
+        {/* Subcategories (Tabs) */}
+        {selectedGroup && currentGroupCategories.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
+            <button
+              onClick={() => setSelectedCategory("")}
+              className={clsx(
+                "px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-colors",
+                !selectedCategory
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:border-slate-300"
+              )}
+            >
+              Tất cả
+            </button>
+            {currentGroupCategories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={clsx(
+                  "px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-colors",
+                  selectedCategory === cat.id
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:border-slate-300"
+                )}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Search + filter bar */}
         <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-5">
           <div className="relative flex-1 min-w-[200px]">
@@ -242,31 +292,33 @@ export default function PublicFileList({ files, categories }: Props) {
 
         {/* Mobile category */}
         <div className="lg:hidden mb-6">
-          <p className="text-xs font-bold text-slate-700 uppercase tracking-widest mb-3 px-1">Chuyên mục</p>
+          <p className="text-xs font-bold text-slate-700 uppercase tracking-widest mb-3 px-1">Phân hệ</p>
           <div className="flex flex-col gap-2">
             <button
-              onClick={() => setSelectedCategory("")}
+              onClick={() => setSelectedGroup("")}
               className={clsx(
                 "w-full text-left px-4 py-3 rounded-xl text-sm font-semibold tracking-wide transition-all",
-                !selectedCategory
+                !selectedGroup
                   ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-sm shadow-blue-500/15"
                   : "bg-white text-slate-600 border border-slate-200/50 hover:bg-slate-50"
               )}
             >
               Tất cả
             </button>
-            {categories.map((cat) => (
+            {GROUPS.map((grp) => (
               <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
+                key={grp.id}
+                onClick={() => setSelectedGroup(grp.id)}
                 className={clsx(
                   "w-full text-left px-4 py-3 rounded-xl text-sm font-semibold tracking-wide transition-all",
-                  selectedCategory === cat.id
+                  selectedGroup === grp.id
                     ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-sm shadow-blue-500/15"
                     : "bg-white text-slate-600 border border-slate-200/50 hover:bg-slate-50"
                 )}
               >
-                {cat.name}
+                <div className="flex items-center gap-2">
+                  {grp.icon} {grp.name}
+                </div>
               </button>
             ))}
           </div>

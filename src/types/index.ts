@@ -29,6 +29,7 @@ export type CategoryWithCount = {
   slug: string;
   description: string | null;
   color: string | null;
+  group: string | null;
   icon: string | null;
   sortOrder: number;
   _count: { files: number };

@@ -7,9 +7,16 @@ import { slugify } from "@/utils/format";
 
 interface Category {
   id: string; name: string; slug: string; description: string | null;
-  color: string | null; icon: string | null; sortOrder: number;
+  color: string | null; icon: string | null; group: string | null; sortOrder: number;
   _count: { files: number };
 }
+
+const GROUPS = [
+  { id: "VIDEO", name: "Thư viện Video" },
+  { id: "AUDIO", name: "Âm thanh & Podcast" },
+  { id: "GRAPHICS", name: "Ấn phẩm & Hình ảnh" },
+  { id: "DOCUMENTS", name: "Tài liệu & Khai thác dữ liệu" }
+];
 
 const COLORS = ["#3B82F6","#6366F1","#8B5CF6","#EC4899","#EF4444","#F97316","#EAB308","#22C55E","#14B8A6","#06B6D4","#64748B"];
 
@@ -21,6 +28,7 @@ export default function ManageCategories() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [color, setColor] = useState(COLORS[0]);
+  const [group, setGroup] = useState("DOCUMENTS");
   const [sortOrder, setSortOrder] = useState("0");
 
   async function fetchCategories() {
@@ -34,19 +42,19 @@ export default function ManageCategories() {
   useEffect(() => { fetchCategories(); }, []);
 
   function openCreate() {
-    setEditId(null); setName(""); setDescription(""); setColor(COLORS[0]); setSortOrder("0");
+    setEditId(null); setName(""); setDescription(""); setColor(COLORS[0]); setGroup("DOCUMENTS"); setSortOrder("0");
     setShowForm(true);
   }
 
   function openEdit(cat: Category) {
     setEditId(cat.id); setName(cat.name); setDescription(cat.description ?? "");
-    setColor(cat.color ?? COLORS[0]); setSortOrder(String(cat.sortOrder));
+    setColor(cat.color ?? COLORS[0]); setGroup(cat.group ?? "DOCUMENTS"); setSortOrder(String(cat.sortOrder));
     setShowForm(true);
   }
 
   async function handleSubmit() {
     if (!name.trim()) { toast.error("Tên chuyên mục là bắt buộc"); return; }
-    const body = { name: name.trim(), description, color, sortOrder: parseInt(sortOrder) };
+    const body = { name: name.trim(), description, color, group, sortOrder: parseInt(sortOrder) };
     const url = editId ? `/api/categories/${editId}` : "/api/categories";
     const method = editId ? "PUT" : "POST";
     const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -80,9 +88,14 @@ export default function ManageCategories() {
       {showForm && (
         <div className="border border-blue-200 bg-blue-50/40 rounded-2xl p-4 space-y-3">
           <h4 className="font-semibold text-slate-700 text-sm">{editId ? "Sửa chuyên mục" : "Tạo chuyên mục mới"}</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Tên chuyên mục *" className="input-base text-sm" />
             <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Mô tả" className="input-base text-sm" />
+            <select value={group} onChange={(e) => setGroup(e.target.value)} className="input-base text-sm cursor-pointer">
+              {GROUPS.map(g => (
+                <option key={g.id} value={g.id}>{g.name}</option>
+              ))}
+            </select>
           </div>
           <div className="flex items-center gap-3">
             <div>
@@ -127,7 +140,14 @@ export default function ManageCategories() {
             <div key={cat.id} className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/60 border border-slate-100 hover:border-slate-200 transition">
               <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: cat.color ?? "#3B82F6" }} />
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-slate-800 text-sm">{cat.name}</p>
+                <p className="font-semibold text-slate-800 text-sm">
+                  {cat.name} 
+                  {cat.group && (
+                    <span className="ml-2 px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold">
+                      {GROUPS.find(g => g.id === cat.group)?.name || cat.group}
+                    </span>
+                  )}
+                </p>
                 {cat.description && <p className="text-xs text-slate-400 truncate">{cat.description}</p>}
               </div>
               <span className="text-xs text-slate-400 shrink-0">{cat._count.files} file</span>

@@ -17,7 +17,7 @@ export default async function DashboardPage() {
 
   const [categories, ownFiles, storageAgg] = await Promise.all([
     prisma.category.findMany({
-      select: { id: true, name: true, color: true },
+      select: { id: true, name: true, color: true, group: true },
       orderBy: { name: "asc" },
     }),
     prisma.mediaFile.findMany({

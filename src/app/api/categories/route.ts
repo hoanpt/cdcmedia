@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Không có quyền" }, { status: 403 });
   }
 
-  const { name, description, color, icon, sortOrder } = await req.json();
+  const { name, description, color, icon, sortOrder, group } = await req.json();
   if (!name) return NextResponse.json({ error: "Tên chuyên mục là bắt buộc" }, { status: 400 });
 
   const slug = slugify(name);
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   if (existing) return NextResponse.json({ error: "Chuyên mục đã tồn tại" }, { status: 409 });
 
   const category = await prisma.category.create({
-    data: { name, slug, description, color, icon, sortOrder: sortOrder ?? 0 },
+    data: { name, slug, description, color, icon, group, sortOrder: sortOrder ?? 0 },
   });
 
   await logActivity(session.userId, "CREATE_CATEGORY", `Tạo chuyên mục: "${name}"`);

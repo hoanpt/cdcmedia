@@ -5,7 +5,7 @@ import { Upload, X, FileText, Tag, Calendar } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatFileSize } from "@/utils/format";
 
-interface Category { id: string; name: string; color: string | null; }
+interface Category { id: string; name: string; color: string | null; group: string | null; }
 
 interface Props {
   categories: Category[];
@@ -149,7 +149,7 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
           <>
             <Upload className="w-8 h-8 text-slate-300" />
             <p className="text-sm text-slate-500">Kéo thả file hoặc <span className="text-blue-600 font-semibold">chọn file</span></p>
-            <p className="text-xs text-slate-400">Tối đa 500 MB / file</p>
+            <p className="text-xs text-slate-400 mt-1">Hỗ trợ: Word, Excel, PDF, PowerPoint, Hình ảnh (JPG, PNG), Video (MP4), Audio (MP3), Nén (ZIP, RAR)<br/>Tối đa 500 MB / file</p>
           </>
         )}
         <input
@@ -210,7 +210,19 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
             className="input-base"
             required
           >
-            {categories.map((c) => (
+            {["VIDEO", "AUDIO", "GRAPHICS", "DOCUMENTS"].map(grpId => {
+              const grpCats = categories.filter(c => c.group === grpId);
+              if (grpCats.length === 0) return null;
+              const grpName = grpId === "VIDEO" ? "Thư viện Video" : grpId === "AUDIO" ? "Âm thanh & Podcast" : grpId === "GRAPHICS" ? "Ấn phẩm & Hình ảnh" : "Tài liệu & Khai thác dữ liệu";
+              return (
+                <optgroup key={grpId} label={grpName}>
+                  {grpCats.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </optgroup>
+              );
+            })}
+            {categories.filter(c => !c.group).map(c => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
@@ -261,7 +273,13 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
             "Xét nghiệm",
             "Dược - Vật tư y tế",
             "Phòng Khám đa khoa",
-            "Bệnh nghề nghiệp"
+            "Bệnh nghề nghiệp",
+            "Sốt xuất huyết",
+            "Tay chân miệng",
+            "Sởi",
+            "Tiêm chủng",
+            "An toàn thực phẩm",
+            "Covid-19"
           ].map(t => {
             const currentTags = tags.split(",").map(x => x.trim()).filter(Boolean);
             const active = currentTags.includes(t);
