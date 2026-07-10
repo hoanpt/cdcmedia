@@ -144,57 +144,51 @@ export default function PublicFileList({ files, categories }: Props) {
   const currentGroupCategories = categories.filter(c => c.group === selectedGroup);
 
   return (
-    <div className="flex gap-4 lg:gap-6">
-      {/* Sidebar – category filter, desktop only */}
-      <aside className="hidden lg:block w-52 shrink-0">
-        <div className="card sticky top-20 space-y-1 bg-white/70 backdrop-blur-xl border border-slate-200/50 p-4">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-            <Filter className="w-3.5 h-3.5" /> Chuyên mục
-          </p>
-          <button
-            onClick={() => setSelectedGroup("")}
-            className={clsx(
-              "w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-between",
-              !selectedGroup
-                ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-md shadow-blue-500/10"
-                : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
-            )}
-          >
-            <span>Tất cả phân hệ</span>
-            <span className={clsx("text-xs font-bold px-2 py-0.5 rounded-full", !selectedGroup ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500")}>
-              {files.length}
-            </span>
-          </button>
-          {GROUPS.map((grp) => {
-            const groupCount = files.filter(f => f.category.group === grp.id).length;
-            return (
-              <button
-                key={grp.id}
-                onClick={() => setSelectedGroup(grp.id)}
-                className={clsx(
-                  "w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-between gap-2",
-                  selectedGroup === grp.id
-                    ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-md shadow-blue-500/10"
-                    : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
-                )}
-              >
-                <span className="flex items-center gap-2 flex-1 min-w-0">
-                  <span className={clsx("shrink-0", selectedGroup === grp.id ? "text-white" : "text-blue-500")}>
-                    {grp.icon}
-                  </span>
-                  <span className="text-[13px] leading-tight whitespace-normal break-words">{grp.name}</span>
-                </span>
-                <span className={clsx("text-xs font-bold px-2 py-0.5 rounded-full shrink-0", selectedGroup === grp.id ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500")}>
-                  {groupCount}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </aside>
+    <div className="flex flex-col gap-4 lg:gap-6">
+      {/* Horizontal Group Menu */}
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide border-b border-slate-100">
+        <button
+          onClick={() => setSelectedGroup("")}
+          className={clsx(
+            "shrink-0 px-4 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2",
+            !selectedGroup
+              ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-md shadow-blue-500/10"
+              : "bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+          )}
+        >
+          Tất cả phân hệ
+          <span className={clsx("text-xs font-bold px-2 py-0.5 rounded-full", !selectedGroup ? "bg-white/20 text-white" : "bg-white text-slate-500 border border-slate-200")}>
+            {files.length}
+          </span>
+        </button>
+        {GROUPS.map((grp) => {
+          const groupCount = files.filter(f => f.category.group === grp.id).length;
+          return (
+            <button
+              key={grp.id}
+              onClick={() => setSelectedGroup(grp.id)}
+              className={clsx(
+                "shrink-0 px-4 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2",
+                selectedGroup === grp.id
+                  ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-md shadow-blue-500/10"
+                  : "bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              )}
+            >
+              <span className={clsx(selectedGroup === grp.id ? "text-white" : "text-blue-500")}>
+                {grp.icon}
+              </span>
+              <span>{grp.name}</span>
+              <span className={clsx("text-xs font-bold px-2 py-0.5 rounded-full", selectedGroup === grp.id ? "bg-white/20 text-white" : "bg-white text-slate-500 border border-slate-200")}>
+                {groupCount}
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
       {/* Main content */}
       <div className="flex-1 min-w-0">
+
         {/* Subcategories (Tabs) */}
         {selectedGroup && currentGroupCategories.length > 1 && (
           <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
@@ -290,39 +284,7 @@ export default function PublicFileList({ files, categories }: Props) {
 
 
 
-        {/* Mobile category */}
-        <div className="lg:hidden mb-6">
-          <p className="text-xs font-bold text-slate-700 uppercase tracking-widest mb-3 px-1">Phân hệ</p>
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={() => setSelectedGroup("")}
-              className={clsx(
-                "w-full text-left px-4 py-3 rounded-xl text-sm font-semibold tracking-wide transition-all",
-                !selectedGroup
-                  ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-sm shadow-blue-500/15"
-                  : "bg-white text-slate-600 border border-slate-200/50 hover:bg-slate-50"
-              )}
-            >
-              Tất cả
-            </button>
-            {GROUPS.map((grp) => (
-              <button
-                key={grp.id}
-                onClick={() => setSelectedGroup(grp.id)}
-                className={clsx(
-                  "w-full text-left px-4 py-3 rounded-xl text-sm font-semibold tracking-wide transition-all",
-                  selectedGroup === grp.id
-                    ? "bg-gradient-to-r from-[#1D78B8] to-[#0d5485] text-white shadow-sm shadow-blue-500/15"
-                    : "bg-white text-slate-600 border border-slate-200/50 hover:bg-slate-50"
-                )}
-              >
-                <div className="flex items-center gap-2">
-                  {grp.icon} {grp.name}
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
+
 
         {/* Count */}
         <p className="text-sm text-slate-500 mb-4">
@@ -338,7 +300,7 @@ export default function PublicFileList({ files, categories }: Props) {
               <button onClick={clearFilters} className="text-blue-500 text-sm hover:underline mt-1">Xóa bộ lọc</button>
             </div>
           ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
             {filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((file) => {
               const isNew = Date.now() - new Date(file.createdAt).getTime() < 24 * 60 * 60 * 1000;
               return (
