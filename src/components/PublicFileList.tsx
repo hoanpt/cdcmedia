@@ -51,10 +51,6 @@ export default function PublicFileList({ files, categories, groups }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [selectedTag, setSelectedTag] = useState("");
-  const [showFilters, setShowFilters] = useState(true);
-  const [showAllTags, setShowAllTags] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
@@ -69,44 +65,13 @@ export default function PublicFileList({ files, categories, groups }: Props) {
         oldFiles.push(f);
       }
     });
-    // Shuffle oldFiles
     for (let i = oldFiles.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [oldFiles[i], oldFiles[j]] = [oldFiles[j], oldFiles[i]];
     }
-    // Sort newFiles by newest first
     newFiles.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     
     return [...newFiles, ...oldFiles];
-  }, [files]);
-
-  // Collect all tags from files (case-insensitive, sorted by frequency)
-  const allTags = useMemo(() => {
-    const counts = new Map<string, number>();
-    const originalNames = new Map<string, string>();
-
-    files.forEach((f) => {
-      const added = new Set<string>();
-      f.tags.forEach(({ tag }) => {
-        const lowerName = tag.name.toLowerCase();
-        if (!added.has(lowerName)) {
-          added.add(lowerName);
-          counts.set(lowerName, (counts.get(lowerName) || 0) + 1);
-          if (!originalNames.has(lowerName)) {
-            originalNames.set(lowerName, tag.name); // keep the first original casing we see
-          }
-        }
-      });
-    });
-
-    return Array.from(counts.entries())
-      .sort((a, b) => b[1] - a[1]) // sort by count descending
-      .map(([lowerName, count]) => ({
-        id: lowerName, // use lowercase name as unique id
-        name: originalNames.get(lowerName) || lowerName,
-        lowerName,
-        count
-      }));
   }, [files]);
 
   const filtered = useMemo(() => {
@@ -122,42 +87,36 @@ export default function PublicFileList({ files, categories, groups }: Props) {
           : f.fileType.includes(typeFilter) || f.fileType.startsWith(typeFilter + "/");
         if (!match) return false;
       }
-      if (selectedTag && !f.tags.some(({ tag }) => tag.name.toLowerCase() === selectedTag)) return false;
       if (query) {
         const q = query.toLowerCase();
         if (
           !f.title.toLowerCase().includes(q) &&
-          !(f.description ?? "").toLowerCase().includes(q) &&
-          !f.tags.some(({ tag }) => tag.name.toLowerCase().includes(q))
+          !(f.description ?? "").toLowerCase().includes(q)
         ) return false;
       }
       return true;
     });
-  }, [sortedFiles, selectedGroup, selectedCategory, typeFilter, selectedTag, query, categories, groups]);
+  }, [sortedFiles, selectedGroup, selectedCategory, typeFilter, query, categories, groups]);
 
   const clearFilters = useCallback(() => {
     setSelectedGroup("");
     setSelectedCategory("");
     setTypeFilter("");
-    setSelectedTag("");
     setQuery("");
     setCurrentPage(1);
   }, []);
 
-  // Reset page when filters change
   useMemo(() => {
     setCurrentPage(1);
-  }, [selectedGroup, selectedCategory, typeFilter, selectedTag, query]);
+  }, [selectedGroup, selectedCategory, typeFilter, query]);
 
-  // Auto-select category when group changes
   useMemo(() => {
     setSelectedCategory("");
   }, [selectedGroup]);
 
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
-  const paginatedFiles = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const hasActiveFilters = selectedGroup || selectedCategory || typeFilter || selectedTag || query;
+  const hasActiveFilters = selectedGroup || selectedCategory || typeFilter || query;
 
   const currentGroupCategories = categories.filter(c => {
     const cGroup = c.group || getCategoryGroup(c.name, groups);
@@ -166,7 +125,6 @@ export default function PublicFileList({ files, categories, groups }: Props) {
 
   return (
     <div className="flex flex-col gap-4 lg:gap-6">
-      {/* Horizontal Group Menu */}
       <div className="flex gap-2 overflow-x-auto pb-3 mb-2 scrollbar-hide border-b border-slate-100">
         <button
           onClick={() => setSelectedGroup("")}
@@ -219,10 +177,8 @@ export default function PublicFileList({ files, categories, groups }: Props) {
         })}
       </div>
 
-      {/* Main content */}
       <div className="flex-1 min-w-0">
 
-        {/* Subcategories (Tabs) */}
         {selectedGroup && currentGroupCategories.length > 1 && (
           <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
             <button
@@ -269,7 +225,6 @@ export default function PublicFileList({ files, categories, groups }: Props) {
           </div>
         )}
 
-        {/* Search + filter bar */}
         <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-5">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -284,46 +239,6 @@ export default function PublicFileList({ files, categories, groups }: Props) {
             />
           </div>
 
-          {/* Quick Filter by Department (Khoa/Phòng) */}
-          <select
-            value={selectedTag}
-            onChange={(e) => setSelectedTag(e.target.value)}
-            aria-label="Lọc theo Khoa/Phòng"
-            className="btn-secondary text-xs sm:text-sm max-w-[220px] truncate"
-            style={{ height: "42px" }}
-          >
-            <option value="">Tất cả Khoa/Phòng</option>
-            {[
-            "Tổ chức - Hành chính",
-            "Kế hoạch - Tài chính",
-            "Kế hoạch - Nghiệp vụ",
-            "PC bệnh truyền nhiễm",
-            "PC HIV/AIDS",
-            "PC bệnh không lây nhiễm",
-            "Sức khỏe môi trường - Y tế trường học",
-            "Sức khỏe sinh sản",
-            "Dinh dưỡng",
-            "Kiểm dịch y tế quốc tế",
-            "Ký sinh trùng - Côn trùng",
-            "Truyền thông",
-            "Xét nghiệm",
-            "Dược - Vật tư y tế",
-            "Phòng Khám đa khoa",
-            "Bệnh nghề nghiệp"
-            ].map((dept) => (
-              <option key={dept} value={dept}>
-                {dept}
-              </option>
-            ))}
-          </select>
-
-          <button
-            onClick={() => setShowFilters((v) => !v)}
-            className={clsx("btn-secondary flex items-center gap-1.5 text-xs sm:text-sm px-3", showFilters && "ring-2 ring-blue-400")}
-            style={{ height: "42px" }}
-          >
-            <SlidersHorizontal className="w-4 h-4" /> Bộ lọc
-          </button>
           {hasActiveFilters && (
             <button onClick={clearFilters} className="btn-secondary flex items-center gap-1 text-xs sm:text-sm text-red-500 px-3" style={{ height: "42px" }}>
               <X className="w-4 h-4" /> Xóa
@@ -331,17 +246,11 @@ export default function PublicFileList({ files, categories, groups }: Props) {
           )}
         </div>
 
-
-
-
-
-        {/* Count */}
         <p className="text-sm text-slate-500 mb-4">
           Hiển thị <strong className="text-slate-700">{filtered.length}</strong> tài liệu
           {hasActiveFilters && <span> (đã lọc)</span>}
         </p>
 
-        {/* Grid */}
         {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-slate-500 gap-3">
               <Search className="w-12 h-12 text-slate-300" />
@@ -363,7 +272,6 @@ export default function PublicFileList({ files, categories, groups }: Props) {
                   </div>
                 )}
                 
-                {/* Header: Icon + Title */}
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden relative border border-slate-100">
                     {(file.thumbnailUrl || (file.fileType.startsWith("image/") && file.filepath !== "external")) ? (
@@ -397,22 +305,13 @@ export default function PublicFileList({ files, categories, groups }: Props) {
                   </div>
                 </div>
 
-                {/* Tags */}
-                {file.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2.5">
-                    {file.tags.slice(0, 1).map(({ tag }) => (
-                      <span key={tag.id} className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-50 border border-slate-100 text-slate-500 font-medium truncate max-w-[120px]">
-                        #{tag.name}
-                      </span>
-                    ))}
-                    {file.tags.length > 1 && (
-                      <span className="text-[10px] font-medium text-slate-400 self-center">+{file.tags.length - 1}</span>
-                    )}
-                  </div>
+                {file.description && (
+                  <p className="mt-2.5 text-xs text-slate-500 line-clamp-2 leading-relaxed" title={file.description}>
+                    {file.description}
+                  </p>
                 )}
 
                 <div className="mt-auto">
-                  {/* Meta */}
                   <div className="flex items-center justify-between text-[10px] text-slate-500 mt-3 pt-2.5 border-t border-slate-100">
                     <span className="font-medium">{formatFileSize(file.fileSize)}</span>
                     <span>{formatDate(file.createdAt)}</span>
@@ -432,7 +331,6 @@ export default function PublicFileList({ files, categories, groups }: Props) {
                     )}
                   </div>
 
-                  {/* Actions */}
                   <div className="flex gap-2 mt-2.5">
                     <Link
                       href={`/document/${file.id}`}
@@ -455,42 +353,6 @@ export default function PublicFileList({ files, categories, groups }: Props) {
           </div>
         )}
 
-        {/* Filters moved below grid */}
-        {showFilters && (
-          <div className="card mt-6 flex flex-wrap gap-4">
-            {/* Tag filter */}
-            {allTags.length > 0 && (
-              <div className="space-y-1.5">
-                <p className="text-xs font-semibold text-slate-500 flex items-center gap-1">
-                  <Tag className="w-3 h-3" /> Thẻ
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {(showAllTags ? allTags : allTags.slice(0, 15)).map((tag) => (
-                    <button
-                      key={tag.id}
-                      onClick={() => setSelectedTag(selectedTag === tag.lowerName ? "" : tag.lowerName)}
-                      className={clsx(
-                        "px-3 py-1 rounded-full text-xs font-medium transition-all",
-                        selectedTag === tag.lowerName
-                          ? "bg-indigo-600 text-white"
-                          : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
-                      )}
-                    >
-                      #{tag.name}
-                    </button>
-                  ))}
-                  {allTags.length > 15 && (
-                    <button
-                      onClick={() => setShowAllTags(!showAllTags)}
-                      className="px-3 py-1 rounded-full text-xs font-medium transition-all bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    >
-                      {showAllTags ? "Thu gọn" : `Xem thêm (${allTags.length - 15})`}
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
         )}
 
         {/* Pagination UI */}
