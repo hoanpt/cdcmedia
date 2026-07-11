@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     prisma.mediaFile.findMany({
       where,
       include: {
-        category: { select: { id: true, name: true, color: true, icon: true } },
+        category: { select: { id: true, name: true, color: true, icon: true, group: true } },
         uploader: { select: { id: true, username: true, displayName: true } },
         tags: { include: { tag: { select: { id: true, name: true } } } },
         attachments: true,
@@ -198,7 +198,7 @@ export async function POST(req: NextRequest) {
         }
       },
       include: {
-        category: { select: { id: true, name: true, color: true, icon: true } },
+        category: { select: { id: true, name: true, color: true, icon: true, group: true } },
         uploader: { select: { id: true, username: true, displayName: true } },
         tags: { include: { tag: true } },
         attachments: true

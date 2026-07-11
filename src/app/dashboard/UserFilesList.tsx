@@ -1,7 +1,7 @@
 // src/app/dashboard/UserFilesList.tsx
 "use client";
-import { useState, useEffect, useCallback } from "react";
-import { Pencil, Trash2, Eye, Download, X, Check, RefreshCw } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { Pencil, Trash2, Eye, Download, X, Check, RefreshCw, Filter } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatFileSize, formatDate } from "@/utils/format";
 import { FileIcon } from "@/utils/fileIcon";
@@ -11,6 +11,7 @@ import type { FileWithRelations } from "@/types";
 
 interface Category { id: string; name: string; }
 interface Category { id: string; name: string; group?: string; color?: string; }
+interface Group { id: string; name: string; }
 interface Props {
   isAdmin: boolean;
   categories: Category[];
@@ -19,30 +20,69 @@ interface Props {
 
 export default function UserFilesList({ isAdmin, categories, refreshSignal }: Props) {
   const [files, setFiles] = useState<FileWithRelations[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingFile, setEditingFile] = useState<FileWithRelations | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [bulkCategoryId, setBulkCategoryId] = useState<string>("");
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+  const [selectedGroupFilter, setSelectedGroupFilter] = useState("");
   const itemsPerPage = 10;
 
-  const fetchFiles = useCallback(async () => {
+  const fetchFilesAndGroups = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/files?limit=200");
-    const data = await res.json();
-    setFiles(data.files ?? []);
+    try {
+      const [filesRes, groupsRes] = await Promise.all([
+        fetch("/api/files?limit=200"),
+        fetch("/api/groups")
+      ]);
+      const filesData = await filesRes.json();
+      const groupsData = await groupsRes.json();
+      setFiles(filesData.files ?? []);
+      setGroups(groupsData.groups ?? []);
+    } catch (e) {
+      console.error(e);
+    }
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchFiles(); }, [fetchFiles, refreshSignal]);
+  useEffect(() => { fetchFilesAndGroups(); }, [fetchFilesAndGroups, refreshSignal]);
+
+  const getCategoryGroup = useCallback((catName: string, availableGroups: Group[]) => {
+    if (!catName || !availableGroups || availableGroups.length === 0) return null;
+    const lower = catName.toLowerCase();
+    
+    if ((lower.includes("video") || lower.includes("clip") || lower.includes("phim")) && availableGroups.some(g => g.id === "VIDEO")) return "VIDEO";
+    if ((lower.includes("audio") || lower.includes("âm thanh") || lower.includes("mp3")) && availableGroups.some(g => g.id === "AUDIO")) return "AUDIO";
+    if ((lower.includes("hình ảnh") || lower.includes("ảnh") || lower.includes("banner") || lower.includes("poster") || lower.includes("infographic")) && availableGroups.some(g => g.id === "GRAPHICS")) return "GRAPHICS";
+    
+    const docGroup = availableGroups.find(g => g.id === "DOCUMENTS");
+    return docGroup ? docGroup.id : availableGroups[availableGroups.length - 1].id;
+  }, []);
+
+  const filteredFiles = useMemo(() => {
+    if (!selectedGroupFilter) return files;
+    return files.filter(f => {
+      const cat = categories.find(c => c.id === f.categoryId);
+      // fallback if needed
+      const catGroup = cat?.group || getCategoryGroup(cat?.name || f.category?.name || "", groups);
+      return catGroup === selectedGroupFilter;
+    });
+  }, [files, selectedGroupFilter, categories, groups, getCategoryGroup]);
+
+  // Reset page on filter change
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedFiles(new Set());
+  }, [selectedGroupFilter]);
 
   async function deleteFile(file: FileWithRelations) {
     if (!confirm(`Xóa "${file.title}"? Hành động này không thể hoàn tác.`)) return;
     const res = await fetch(`/api/files/${file.id}`, { method: "DELETE" });
     if (res.ok) {
       toast.success("Đã xóa");
-      fetchFiles();
+      fetchFilesAndGroups();
     } else {
       const d = await res.json();
       toast.error(d.error ?? "Lỗi xóa file");
@@ -70,7 +110,7 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
         toast.success(`Đã chuyển thành công ${selectedFiles.size} tài liệu`);
         setSelectedFiles(new Set());
         setBulkCategoryId("");
-        fetchFiles();
+        fetchFilesAndGroups();
       } else {
         const d = await res.json();
         toast.error(d.error ?? "Lỗi chuyển chuyên mục");
@@ -133,14 +173,29 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
             </div>
           </div>
         ) : (
-          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-            <h2 className="font-bold text-slate-800">
+          <div className="px-5 py-4 border-b border-slate-100 flex flex-wrap gap-3 items-center justify-between">
+            <h2 className="font-bold text-slate-800 flex items-center gap-2">
               {isAdmin ? "Tất cả tài liệu" : "Tài liệu của bạn"}
-              <span className="ml-2 text-sm font-normal text-slate-400">({files.length})</span>
+              <span className="text-sm font-normal text-slate-400">({filteredFiles.length})</span>
             </h2>
-            <button onClick={fetchFiles} className="btn-secondary text-xs flex items-center gap-1">
-              <RefreshCw className="w-3 h-3" /> Làm mới
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-2 border border-slate-200 rounded-lg px-2">
+                <Filter className="w-4 h-4 text-slate-400" />
+                <select
+                  value={selectedGroupFilter}
+                  onChange={(e) => setSelectedGroupFilter(e.target.value)}
+                  className="input-base border-none shadow-none focus:ring-0 px-1 py-1.5 text-sm h-auto w-auto min-w-[150px]"
+                >
+                  <option value="">Tất cả phân hệ</option>
+                  {groups.map(g => (
+                    <option key={g.id} value={g.id}>{g.name}</option>
+                  ))}
+                </select>
+              </div>
+              <button onClick={fetchFilesAndGroups} className="btn-secondary text-xs flex items-center gap-1 py-1.5">
+                <RefreshCw className="w-3 h-3" /> Làm mới
+              </button>
+            </div>
           </div>
         )}
 
@@ -149,12 +204,12 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
             <input 
               type="checkbox"
               checked={
-                files.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).length > 0 &&
-                files.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).every(f => selectedFiles.has(f.id))
+                filteredFiles.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).length > 0 &&
+                filteredFiles.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).every(f => selectedFiles.has(f.id))
               }
               onChange={(e) => {
                 const newSet = new Set(selectedFiles);
-                const currentFiles = files.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+                const currentFiles = filteredFiles.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
                 if (e.target.checked) {
                   currentFiles.forEach(f => newSet.add(f.id));
                 } else {
@@ -167,7 +222,7 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tên tài liệu</span>
           </div>
 
-          {files.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((file) => (
+          {filteredFiles.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((file) => (
             <div key={file.id} className="px-5 py-4 hover:bg-slate-50/50 transition-colors">
               <div className="flex items-center gap-3">
                 <input 
@@ -235,65 +290,29 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
           ))}
         </div>
 
-        {/* Pagination UI */}
-        {Math.ceil(files.length / itemsPerPage) > 1 && (
-          <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-slate-50/50">
-            <span className="text-xs text-slate-500">
-              Hiển thị {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, files.length)} trong {files.length} tài liệu
+        {/* Pagination */}
+        {Math.ceil(filteredFiles.length / itemsPerPage) > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-6 py-4">
+            <button 
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(p => p - 1)}
+              className="px-3 py-1 text-sm border rounded hover:bg-slate-50 disabled:opacity-50"
+            >
+              Trang trước
+            </button>
+            <span className="text-sm text-slate-600">
+              Trang {currentPage} / {Math.ceil(filteredFiles.length / itemsPerPage)}
             </span>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="px-2.5 py-1.5 rounded text-xs font-medium border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-50 transition"
-              >
-                Trước
-              </button>
-              
-              {Array.from({ length: Math.ceil(files.length / itemsPerPage) }, (_, i) => i + 1).map(page => {
-                const totalPages = Math.ceil(files.length / itemsPerPage);
-                if (
-                  page === 1 || 
-                  page === totalPages || 
-                  (page >= currentPage - 1 && page <= currentPage + 1)
-                ) {
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`w-7 h-7 flex items-center justify-center rounded text-xs font-medium transition ${
-                        currentPage === page 
-                          ? "bg-indigo-50 text-indigo-600 border border-indigo-200" 
-                          : "text-slate-600 hover:bg-white border border-transparent hover:border-slate-200"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  );
-                }
-                
-                if (
-                  (page === 2 && currentPage > 3) ||
-                  (page === totalPages - 1 && currentPage < totalPages - 2)
-                ) {
-                  return <span key={page} className="text-slate-400 px-1 text-xs">...</span>;
-                }
-                
-                return null;
-              })}
-
-              <button
-                onClick={() => setCurrentPage(p => Math.min(Math.ceil(files.length / itemsPerPage), p + 1))}
-                disabled={currentPage === Math.ceil(files.length / itemsPerPage)}
-                className="px-2.5 py-1.5 rounded text-xs font-medium border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-50 transition"
-              >
-                Sau
-              </button>
-            </div>
+            <button 
+              disabled={currentPage === Math.ceil(filteredFiles.length / itemsPerPage)}
+              onClick={() => setCurrentPage(p => p + 1)}
+              className="px-3 py-1 text-sm border rounded hover:bg-slate-50 disabled:opacity-50"
+            >
+              Trang sau
+            </button>
           </div>
         )}
       </div>
-
 
       {editingFile && (
         <EditFileModal
