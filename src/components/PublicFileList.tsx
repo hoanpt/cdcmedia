@@ -353,8 +353,6 @@ export default function PublicFileList({ files, categories, groups }: Props) {
           </div>
         )}
 
-        )}
-
         {/* Pagination UI */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 mt-8">
