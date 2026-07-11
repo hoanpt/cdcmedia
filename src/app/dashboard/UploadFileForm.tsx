@@ -1,7 +1,7 @@
 // src/app/dashboard/UploadFileForm.tsx
 "use client";
 import { useState, useRef, FormEvent, useEffect } from "react";
-import { Upload, X, FileText, Tag, Calendar } from "lucide-react";
+import { Upload, X, FileText, Tag, Calendar, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatFileSize } from "@/utils/format";
 
@@ -21,6 +21,7 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
   const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
   const [tags, setTags] = useState("");
   const [year, setYear] = useState(String(new Date().getFullYear()));
+  const [autoDescribe, setAutoDescribe] = useState(false);
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -58,6 +59,7 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
     fd.append("categoryId", categoryId);
     fd.append("tags", tags);
     fd.append("year", year);
+    if (autoDescribe) fd.append("autoDescribe", "true");
 
     const xhr = new XMLHttpRequest();
     xhrRef.current = xhr;
@@ -189,14 +191,26 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
         />
       </div>
 
-      {/* Description */}
       <div>
-        <label className="block text-xs font-semibold text-slate-600 mb-1">Mô tả</label>
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-sm font-medium text-slate-700">Mô tả tài liệu</label>
+          <label className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full transition-colors border border-indigo-100">
+            <input 
+              type="checkbox" 
+              checked={autoDescribe} 
+              onChange={(e) => setAutoDescribe(e.target.checked)} 
+              className="rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500 w-3 h-3 cursor-pointer"
+            />
+            <Sparkles className="w-3 h-3" />
+            Tự động tạo bằng AI
+          </label>
+        </div>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Mô tả ngắn về tài liệu (không bắt buộc)"
-          className="input-base resize-none h-20"
+          placeholder="Viết một đoạn giới thiệu ngắn..."
+          rows={3}
+          className="input-base resize-none"
         />
       </div>
 

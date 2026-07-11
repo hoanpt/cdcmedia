@@ -7,6 +7,7 @@ import { isDriveConfigured, uploadToDrive, extractDriveIdFromLink, getDriveFileM
 import { writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
+import { getGeminiKey, generateFileDescription } from "@/lib/ai";
 
 const MAX_SIZE = 500 * 1024 * 1024; // 500 MB
 const UPLOADS_DIR = path.join(process.cwd(), "uploads");
@@ -110,6 +111,7 @@ export async function POST(req: NextRequest) {
     const categoryId = formData.get("categoryId") as string;
     const tagsRaw = formData.get("tags") as string | null;
     const year = formData.get("year") as string | null;
+    const autoDescribe = formData.get("autoDescribe") === "true";
 
     if ((files.length === 0 && !googleDriveLink) || !title || !categoryId) {
       return NextResponse.json({ error: "Thiếu thông tin bắt buộc" }, { status: 400 });
@@ -121,6 +123,20 @@ export async function POST(req: NextRequest) {
 
     const category = await prisma.category.findUnique({ where: { id: categoryId } });
     if (!category) return NextResponse.json({ error: "Chuyên mục không tồn tại" }, { status: 400 });
+
+    let finalDescription = description || null;
+    if (autoDescribe && files.length > 0 && !finalDescription) {
+      const geminiKey = await getGeminiKey();
+      if (geminiKey) {
+        try {
+          const buffer = Buffer.from(await files[0].arrayBuffer());
+          const generated = await generateFileDescription(buffer, files[0].name, geminiKey);
+          if (generated) finalDescription = generated;
+        } catch (e) {
+          console.error("[AutoDescribe error]", e);
+        }
+      }
+    }
 
     let mainFileData: any = null;
     const attachmentsData: any[] = [];
@@ -179,7 +195,7 @@ export async function POST(req: NextRequest) {
     const mediaFile = await prisma.mediaFile.create({
       data: {
         title,
-        description: description || null,
+        description: finalDescription,
         year: year ? parseInt(year) : new Date().getFullYear(),
         categoryId,
         uploaderId: session.userId,

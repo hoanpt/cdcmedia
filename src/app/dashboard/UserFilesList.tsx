@@ -1,7 +1,7 @@
 // src/app/dashboard/UserFilesList.tsx
 "use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Pencil, Trash2, Eye, Download, X, Check, RefreshCw, Filter } from "lucide-react";
+import { Pencil, Trash2, Eye, Download, X, Check, RefreshCw, Filter, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatFileSize, formatDate } from "@/utils/format";
 import { FileIcon } from "@/utils/fileIcon";
@@ -122,6 +122,35 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
     }
   };
 
+  const handleBulkDescribe = async () => {
+    if (selectedFiles.size === 0) return;
+    const confirmAI = window.confirm(`Bạn có chắc muốn dùng AI để tạo mô tả cho ${selectedFiles.size} tài liệu?\nLưu ý: Quá trình này có thể mất vài phút tuỳ thuộc vào độ dài nội dung.`);
+    if (!confirmAI) return;
+
+    setIsBulkUpdating(true);
+    const loadingToast = toast.loading(`Đang nhờ AI phân tích và tạo mô tả...`);
+    try {
+      const res = await fetch("/api/files/bulk-describe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileIds: Array.from(selectedFiles) }),
+      });
+      const d = await res.json();
+      if (res.ok) {
+        toast.success(d.message);
+        setSelectedFiles(new Set());
+        fetchFilesAndGroups();
+      } else {
+        toast.error(d.error ?? "Lỗi gọi AI");
+      }
+    } catch (err) {
+      toast.error("Đã xảy ra lỗi hệ thống");
+    } finally {
+      toast.dismiss(loadingToast);
+      setIsBulkUpdating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="card flex items-center justify-center py-16 text-slate-400 gap-2">
@@ -150,6 +179,15 @@ export default function UserFilesList({ isAdmin, categories, refreshSignal }: Pr
               <button onClick={() => setSelectedFiles(new Set())} className="text-xs text-blue-600 hover:underline">Bỏ chọn</button>
             </div>
             <div className="flex items-center gap-2">
+              <button 
+                onClick={handleBulkDescribe}
+                disabled={isBulkUpdating}
+                className="btn-secondary py-1.5 text-sm h-auto shrink-0 flex items-center gap-1 border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100"
+                title="Tự động đọc nội dung và tạo mô tả bằng AI"
+              >
+                {isBulkUpdating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                Tạo mô tả (AI)
+              </button>
               <select
                 value={bulkCategoryId}
                 onChange={(e) => setBulkCategoryId(e.target.value)}

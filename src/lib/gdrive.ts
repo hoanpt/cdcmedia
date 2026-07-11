@@ -182,3 +182,17 @@ export async function listFilesInFolder(folderId: string): Promise<any[]> {
     throw e;
   }
 }
+
+export async function downloadDriveFile(fileId: string): Promise<Buffer | null> {
+  try {
+    const { drive } = await getDriveClient();
+    const res = await drive.files.get(
+      { fileId, alt: 'media' },
+      { responseType: 'arraybuffer' }
+    );
+    return Buffer.from(res.data as any);
+  } catch (e) {
+    console.error(`Could not download drive file ${fileId}`, e);
+    return null;
+  }
+}

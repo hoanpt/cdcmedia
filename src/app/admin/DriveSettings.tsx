@@ -10,6 +10,7 @@ interface Settings {
   gdrive_refresh_token: string;
   gdrive_folder_id: string;
   default_thumbnail_url: string;
+  gemini_api_key: string;
 }
 
 export default function DriveSettings() {
@@ -19,6 +20,7 @@ export default function DriveSettings() {
     gdrive_refresh_token: "",
     gdrive_folder_id: "",
     default_thumbnail_url: "",
+    gemini_api_key: "",
   });
   const [showSecret, setShowSecret] = useState(false);
   const [showToken, setShowToken] = useState(false);
@@ -44,6 +46,7 @@ export default function DriveSettings() {
         gdrive_refresh_token: settings.gdrive_refresh_token,
         gdrive_folder_id: settings.gdrive_folder_id,
         default_thumbnail_url: settings.default_thumbnail_url,
+        gemini_api_key: settings.gemini_api_key,
       }),
     });
     setSaving(false);
@@ -197,12 +200,26 @@ export default function DriveSettings() {
           />
         </div>
 
-        <div className="flex gap-3">
+        <h4 className="font-bold text-slate-800 border-b border-slate-100 pb-2 mt-6">3. Cấu hình Trí tuệ Nhân tạo (Google Gemini)</h4>
+        <div>
+          <label className="block text-xs font-semibold text-slate-600 mb-1">Gemini API Key</label>
+          <div className="relative">
+            <input
+              type={showToken ? "text" : "password"} value={settings.gemini_api_key}
+              onChange={(e) => setSettings((s) => ({ ...s, gemini_api_key: e.target.value }))}
+              placeholder="AIzaSy..."
+              className="input-base pr-10"
+            />
+          </div>
+          <p className="text-xs text-slate-500 mt-1">Dùng để tự động tạo mô tả tài liệu. Lấy key miễn phí tại <a href="https://aistudio.google.com" target="_blank" className="text-blue-500 hover:underline">Google AI Studio</a></p>
+        </div>
+
+        <div className="flex gap-3 pt-4">
           <button type="submit" disabled={saving} className="btn-primary flex items-center gap-1.5 text-sm py-2.5">
             <Save className="w-4 h-4" /> {saving ? "Đang lưu…" : "Lưu cài đặt"}
           </button>
           <button type="button" onClick={handleTest} disabled={testing} className="btn-secondary flex items-center gap-1.5 text-sm py-2.5">
-            <TestTube className="w-4 h-4" /> {testing ? "Đang kiểm tra…" : "Kiểm tra kết nối"}
+            <TestTube className="w-4 h-4" /> {testing ? "Đang kiểm tra…" : "Kiểm tra kết nối Drive"}
           </button>
         </div>
       </form>
