@@ -302,6 +302,16 @@ export default function PublicFileList({ files, categories, groups }: Props) {
                     <h2 className="font-semibold text-slate-800 text-[13px] leading-snug w-full truncate group-hover:text-blue-600 transition-colors" title={file.title}>
                       {file.title.length > 45 ? file.title.substring(0, 45) + "..." : file.title}
                     </h2>
+                    {file.tags && file.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5 w-full">
+                        {file.tags.map((t: any) => (
+                          <span key={t.tag.id} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-slate-100 text-[9px] text-slate-500 font-medium">
+                            <Tag className="w-2.5 h-2.5" />
+                            {t.tag.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 

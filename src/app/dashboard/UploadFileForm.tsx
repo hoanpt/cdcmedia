@@ -24,8 +24,18 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
   const [autoDescribe, setAutoDescribe] = useState(false);
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const xhrRef = useRef<XMLHttpRequest | null>(null);
+
+  useEffect(() => {
+    fetch("/api/tags")
+      .then(r => r.json())
+      .then(d => {
+        if (d.tags) setAvailableTags(d.tags.map((t: any) => t.name));
+      })
+      .catch(() => {});
+  }, []);
 
   // Auto-fill title from filename
   useEffect(() => {
@@ -269,52 +279,30 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
           placeholder="vd: sốt xuất huyết, phòng dịch, 2025"
           className="input-base mb-2"
         />
-        {/* 16 Thẻ Khoa/Phòng CDC */}
-        <div className="flex flex-wrap gap-1.5">
-          {[
-            "Tổ chức - Hành chính",
-            "Kế hoạch - Tài chính",
-            "Kế hoạch - Nghiệp vụ",
-            "PC bệnh truyền nhiễm",
-            "PC HIV/AIDS",
-            "PC bệnh không lây nhiễm",
-            "Sức khỏe môi trường - Y tế trường học",
-            "Sức khỏe sinh sản",
-            "Dinh dưỡng",
-            "Kiểm dịch y tế quốc tế",
-            "Ký sinh trùng - Côn trùng",
-            "Truyền thông",
-            "Xét nghiệm",
-            "Dược - Vật tư y tế",
-            "Phòng Khám đa khoa",
-            "Bệnh nghề nghiệp",
-            "Sốt xuất huyết",
-            "Tay chân miệng",
-            "Sởi",
-            "Tiêm chủng",
-            "An toàn thực phẩm",
-            "Covid-19"
-          ].map(t => {
-            const currentTags = tags.split(",").map(x => x.trim()).filter(Boolean);
-            const active = currentTags.includes(t);
-            return (
-              <button
-                type="button"
-                key={t}
-                onClick={() => {
-                  if (active) {
-                    setTags(currentTags.filter(x => x !== t).join(", "));
-                  } else {
-                    setTags([...currentTags, t].join(", "));
-                  }
-                }}
-                className={`px-2 py-1 text-[10px] sm:text-[11px] rounded-lg border transition-colors ${active ? "bg-blue-100 border-blue-300 text-blue-700 font-semibold shadow-sm" : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"}`}
-              >
-                {t}
-              </button>
-            )
-          })}
-        </div>
+        {availableTags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {availableTags.map(t => {
+              const currentTags = tags.split(",").map(x => x.trim()).filter(Boolean);
+              const active = currentTags.includes(t);
+              return (
+                <button
+                  type="button"
+                  key={t}
+                  onClick={() => {
+                    if (active) {
+                      setTags(currentTags.filter(x => x !== t).join(", "));
+                    } else {
+                      setTags([...currentTags, t].join(", "));
+                    }
+                  }}
+                  className={`px-2 py-1 text-[10px] sm:text-[11px] rounded-lg border transition-colors ${active ? "bg-blue-100 border-blue-300 text-blue-700 font-semibold shadow-sm" : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"}`}
+                >
+                  {t}
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Progress */}

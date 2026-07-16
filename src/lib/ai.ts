@@ -11,14 +11,22 @@ export async function extractTextFromFile(buffer: Buffer, filename: string): Pro
   try {
     const ext = filename.split('.').pop()?.toLowerCase() || '';
     
+    if (ext === 'txt') {
+      return buffer.toString('utf-8');
+    }
+
     // Attempt to use officeparser
-    const text = await parseOffice(buffer, {
+    const result: any = await parseOffice(buffer, {
       fileType: ext as any,
       ignoreNotes: true,
       newline_delimiter: "\n"
     });
     
-    return text || "";
+    if (result && typeof result.toText === 'function') {
+      return result.toText() || "";
+    }
+    
+    return typeof result === 'string' ? result : "";
   } catch (error) {
     console.error("[extractTextFromFile] Error:", error);
     return "";
