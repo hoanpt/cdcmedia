@@ -316,7 +316,7 @@ export default function PublicFileList({ files, categories, groups }: Props) {
               <button onClick={clearFilters} className="text-blue-500 text-sm hover:underline mt-1">Xóa bộ lọc</button>
             </div>
           ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-5">
             {filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((file) => {
               const isNew = Date.now() - new Date(file.createdAt).getTime() < 24 * 60 * 60 * 1000;
               return (
@@ -331,13 +331,16 @@ export default function PublicFileList({ files, categories, groups }: Props) {
                 )}
                 
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden relative border border-slate-100">
+                  <div 
+                    className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden relative border border-slate-100"
+                    style={{ width: "48px", height: "48px" }}
+                  >
                     {(file.thumbnailUrl || (file.fileType.startsWith("image/") && file.filepath !== "external")) ? (
                       <Image 
                         src={`/api/thumbnail/${file.id}`} 
                         alt="thumbnail" 
-                        width={40}
-                        height={40}
+                        width={48}
+                        height={48}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
@@ -346,7 +349,7 @@ export default function PublicFileList({ files, categories, groups }: Props) {
                       />
                     ) : null}
                     <div className={`flex items-center justify-center w-full h-full text-blue-600 bg-blue-50/30 ${(file.thumbnailUrl || (file.fileType.startsWith("image/") && file.filepath !== "external")) ? 'hidden' : ''}`}>
-                      <FileIcon mimeType={file.fileType} filename={file.filename} className="w-5 h-5" />
+                      <FileIcon mimeType={file.fileType} filename={file.filename} className="w-6 h-6" />
                     </div>
                   </div>
                   
