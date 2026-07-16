@@ -46,13 +46,68 @@ const getCategoryGroup = (catName: string, availableGroups: Group[]) => {
   return docGroup ? docGroup.id : availableGroups[availableGroups.length - 1].id;
 };
 
+const isDepartmentTag = (tagName: string) => {
+  const depts = [
+    "tổ chức - hành chính",
+    "kế hoạch - tài chính",
+    "kế hoạch - nghiệp vụ",
+    "pc bệnh truyền nhiễm",
+    "khoa bệnh truyền nhiễm",
+    "pc hiv/aids",
+    "pc bệnh không lây nhiễm",
+    "sức khỏe môi trường - y tế trường học",
+    "sức khỏe sinh sản",
+    "dinh dưỡng",
+    "kiểm dịch y tế quốc tế",
+    "ký sinh trùng - côn trùng",
+    "truyền thông",
+    "xét nghiệm",
+    "dược - vật tư y tế",
+    "phòng khám đa khoa",
+    "bệnh nghề nghiệp"
+  ];
+  return depts.includes(tagName.toLowerCase().trim());
+};
+
 export default function PublicFileList({ files, categories, groups }: Props) {
   const [selectedGroup, setSelectedGroup] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
+  const [selectedTag, setSelectedTag] = useState("");
+  const [showAllTags, setShowAllTags] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+
+  // Collect all tags from files (case-insensitive, sorted by frequency), excluding department tags
+  const allTags = useMemo(() => {
+    const counts = new Map<string, number>();
+    const originalNames = new Map<string, string>();
+
+    files.forEach((f) => {
+      const added = new Set<string>();
+      f.tags.forEach(({ tag }) => {
+        if (isDepartmentTag(tag.name)) return;
+        const lowerName = tag.name.toLowerCase();
+        if (!added.has(lowerName)) {
+          added.add(lowerName);
+          counts.set(lowerName, (counts.get(lowerName) || 0) + 1);
+          if (!originalNames.has(lowerName)) {
+            originalNames.set(lowerName, tag.name);
+          }
+        }
+      });
+    });
+
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1]) // sort by count descending
+      .map(([lowerName, count]) => ({
+        id: lowerName,
+        name: originalNames.get(lowerName) || lowerName,
+        lowerName,
+        count
+      }));
+  }, [files]);
 
   const sortedFiles = useMemo(() => {
     const now = Date.now();
@@ -87,28 +142,31 @@ export default function PublicFileList({ files, categories, groups }: Props) {
           : f.fileType.includes(typeFilter) || f.fileType.startsWith(typeFilter + "/");
         if (!match) return false;
       }
+      if (selectedTag && !f.tags.some(({ tag }) => tag.name.toLowerCase() === selectedTag)) return false;
       if (query) {
         const q = query.toLowerCase();
         if (
           !f.title.toLowerCase().includes(q) &&
-          !(f.description ?? "").toLowerCase().includes(q)
+          !(f.description ?? "").toLowerCase().includes(q) &&
+          !f.tags.some(({ tag }) => tag.name.toLowerCase().includes(q))
         ) return false;
       }
       return true;
     });
-  }, [sortedFiles, selectedGroup, selectedCategory, typeFilter, query, categories, groups]);
+  }, [sortedFiles, selectedGroup, selectedCategory, typeFilter, selectedTag, query, categories, groups]);
 
   const clearFilters = useCallback(() => {
     setSelectedGroup("");
     setSelectedCategory("");
     setTypeFilter("");
+    setSelectedTag("");
     setQuery("");
     setCurrentPage(1);
   }, []);
 
   useMemo(() => {
     setCurrentPage(1);
-  }, [selectedGroup, selectedCategory, typeFilter, query]);
+  }, [selectedGroup, selectedCategory, typeFilter, selectedTag, query]);
 
   useMemo(() => {
     setSelectedCategory("");
@@ -116,7 +174,7 @@ export default function PublicFileList({ files, categories, groups }: Props) {
 
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
 
-  const hasActiveFilters = selectedGroup || selectedCategory || typeFilter || query;
+  const hasActiveFilters = selectedGroup || selectedCategory || typeFilter || selectedTag || query;
 
   const currentGroupCategories = categories.filter(c => {
     const cGroup = c.group || getCategoryGroup(c.name, groups);
@@ -302,9 +360,9 @@ export default function PublicFileList({ files, categories, groups }: Props) {
                     <h2 className="font-semibold text-slate-800 text-[13px] leading-snug w-full truncate group-hover:text-blue-600 transition-colors" title={file.title}>
                       {file.title.length > 45 ? file.title.substring(0, 45) + "..." : file.title}
                     </h2>
-                    {file.tags && file.tags.length > 0 && (
+                    {file.tags && file.tags.filter((t: any) => !isDepartmentTag(t.tag.name)).length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1.5 w-full">
-                        {file.tags.map((t: any) => (
+                        {file.tags.filter((t: any) => !isDepartmentTag(t.tag.name)).map((t: any) => (
                           <span key={t.tag.id} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-slate-100 text-[9px] text-slate-500 font-medium">
                             <Tag className="w-2.5 h-2.5" />
                             {t.tag.name}
@@ -417,6 +475,41 @@ export default function PublicFileList({ files, categories, groups }: Props) {
             >
               Sau
             </button>
+          </div>
+        )}
+
+        {/* Tag Cloud */}
+        {allTags.length > 0 && (
+          <div className="card mt-8 p-5 border border-slate-200/60 rounded-2xl bg-slate-50/50 shadow-sm">
+            <div className="space-y-3">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                <Tag className="w-4 h-4 text-blue-500" /> Phân loại theo chủ đề (Hashtags)
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {(showAllTags ? allTags : allTags.slice(0, 20)).map((tag) => (
+                  <button
+                    key={tag.id}
+                    onClick={() => setSelectedTag(selectedTag === tag.lowerName ? "" : tag.lowerName)}
+                    className={clsx(
+                      "px-3 py-1.5 rounded-xl text-xs font-bold transition-all border",
+                      selectedTag === tag.lowerName
+                        ? "bg-[#1D78B8] border-[#1D78B8] text-white shadow-sm"
+                        : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                    )}
+                  >
+                    #{tag.name} <span className={clsx("ml-1 font-semibold", selectedTag === tag.lowerName ? "text-blue-100" : "text-slate-400")}>({tag.count})</span>
+                  </button>
+                ))}
+                {allTags.length > 20 && (
+                  <button
+                    onClick={() => setShowAllTags(!showAllTags)}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-200 border border-slate-300 text-slate-700 hover:bg-slate-300"
+                  >
+                    {showAllTags ? "Thu gọn" : `Xem thêm (${allTags.length - 20})`}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>
