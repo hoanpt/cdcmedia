@@ -46,13 +46,12 @@ export async function POST(req: NextRequest) {
     }
 
     const description = await generateFileDescription(buffer, filename, geminiKey);
-    if (!description) {
-      return NextResponse.json({ error: "AI không thể tạo mô tả cho tài liệu này (file quá lớn hoặc không có nội dung)" }, { status: 400 });
-    }
-
     return NextResponse.json({ description });
   } catch (err: any) {
     console.error("[ai/describe] Error:", err);
-    return NextResponse.json({ error: "Lỗi khi gọi AI: " + (err.message || "Unknown") }, { status: 500 });
+    if (err.message === "NO_TEXT") {
+      return NextResponse.json({ error: "Tài liệu này không có văn bản (chữ) nào để AI đọc, hoặc nó chỉ chứa hình ảnh quét." }, { status: 400 });
+    }
+    return NextResponse.json({ error: "Lỗi hệ thống AI: " + (err.message || "Unknown") }, { status: 500 });
   }
 }
