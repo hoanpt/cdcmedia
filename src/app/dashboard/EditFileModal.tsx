@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { X, Upload, Check } from "lucide-react";
+import { X, Upload, Check, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface Category { id: string; name: string; color: string | null; }
@@ -147,7 +147,46 @@ export default function EditFileModal({ file, categories, onClose, onSuccess }: 
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Mô tả</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Mô tả</label>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (mode === "link") return toast.error("Tính năng AI hiện chưa hỗ trợ Link Google Drive");
+                    
+                    setSaving(true);
+                    const fd = new FormData();
+                    if (mode === "file" && newFile) {
+                      fd.append("file", newFile);
+                    } else if (mode === "keep") {
+                      fd.append("fileId", file.id);
+                    } else {
+                      setSaving(false);
+                      return toast.error("Không có file để phân tích");
+                    }
+                    
+                    try {
+                      const res = await fetch("/api/ai/describe", { method: "POST", body: fd });
+                      const data = await res.json();
+                      if (res.ok) {
+                        setDescription(data.description);
+                        toast.success("Tạo mô tả thành công!");
+                      } else {
+                        toast.error(data.error || "Không thể tạo mô tả");
+                      }
+                    } catch (e) {
+                      toast.error("Lỗi kết nối tới AI");
+                    } finally {
+                      setSaving(false);
+                    }
+                  }}
+                  disabled={saving || (mode === "file" && !newFile)}
+                  className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-2.5 py-1.5 rounded-full transition-colors border border-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  Tạo bằng AI
+                </button>
+              </div>
               <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="input-base h-20 resize-none" />
             </div>
 

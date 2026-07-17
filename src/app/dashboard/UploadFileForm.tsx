@@ -204,16 +204,37 @@ export default function UploadFileForm({ categories, onUploaded }: Props) {
       <div>
         <div className="flex items-center justify-between mb-1">
           <label className="text-sm font-medium text-slate-700">Mô tả tài liệu</label>
-          <label className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full transition-colors border border-indigo-100">
-            <input 
-              type="checkbox" 
-              checked={autoDescribe} 
-              onChange={(e) => setAutoDescribe(e.target.checked)} 
-              className="rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500 w-3 h-3 cursor-pointer"
-            />
+          <button
+            type="button"
+            onClick={async () => {
+              if (mode === "file" && files.length === 0) return toast.error("Vui lòng chọn file trước khi dùng AI");
+              if (mode === "link") return toast.error("Tính năng AI hiện chỉ hỗ trợ khi tải file trực tiếp từ máy tính");
+              
+              setUploading(true); // Tạm dùng uploading state hoặc thêm state riêng
+              const fd = new FormData();
+              fd.append("file", files[0]);
+
+              try {
+                const res = await fetch("/api/ai/describe", { method: "POST", body: fd });
+                const data = await res.json();
+                if (res.ok) {
+                  setDescription(data.description);
+                  toast.success("Tạo mô tả thành công!");
+                } else {
+                  toast.error(data.error || "Không thể tạo mô tả");
+                }
+              } catch (e) {
+                toast.error("Lỗi kết nối tới AI");
+              } finally {
+                setUploading(false);
+              }
+            }}
+            disabled={uploading || (mode === "file" && files.length === 0)}
+            className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-2.5 py-1.5 rounded-full transition-colors border border-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <Sparkles className="w-3 h-3" />
-            Tự động tạo bằng AI
-          </label>
+            Tạo bằng AI
+          </button>
         </div>
         <textarea
           value={description}
