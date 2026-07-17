@@ -54,8 +54,6 @@ function getMimeType(filename: string): string {
 
 export async function generateFileDescription(buffer: Buffer, filename: string, apiKey: string): Promise<string> {
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-  
   const mimeType = getMimeType(filename);
   const isNativeSupported = ['image/', 'application/pdf', 'video/', 'audio/', 'text/plain'].some(prefix => mimeType.startsWith(prefix));
   
@@ -64,37 +62,69 @@ Nhiệm vụ: Phân tích tài liệu / tệp đính kèm có tên "${filename}"
 LƯU Ý QUAN TRỌNG:
 - Chỉ trả về duy nhất đoạn văn bản mô tả, không thêm bình luận, không dùng markdown in đậm/nghiêng.`;
 
-  let result;
-  if (isNativeSupported && buffer.length < 19 * 1024 * 1024) {
-     result = await model.generateContent([
-       prompt,
-       {
-         inlineData: {
-           data: buffer.toString("base64"),
-           mimeType
+  const modelsToTry = [
+    "gemini-2.5-flash",
+    "gemini-2.0-flash", 
+    "gemini-1.5-flash-latest", 
+    "gemini-1.5-flash", 
+    "gemini-1.5-pro-latest", 
+    "gemini-1.5-pro",
+    "gemini-pro"
+  ];
+  let lastError: any = null;
+
+  for (const modelName of modelsToTry) {
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName });
+      let result;
+
+      if (isNativeSupported && buffer.length < 19 * 1024 * 1024 && modelName !== "gemini-pro") {
+         result = await model.generateContent([
+           prompt,
+           {
+             inlineData: {
+               data: buffer.toString("base64"),
+               mimeType
+             }
+           }
+         ]);
+      } else {
+         let text = "";
+         try {
+           text = await extractTextFromFile(buffer, filename);
+         } catch (err: any) {
+           throw new Error("Lỗi khi đọc nội dung file: " + err.message);
          }
-       }
-     ]);
-  } else {
-     let text = "";
-     try {
-       text = await extractTextFromFile(buffer, filename);
-     } catch (err: any) {
-       throw new Error("Lỗi khi đọc nội dung file: " + err.message);
-     }
-     
-     if (!text || text.trim().length < 10) {
-       throw new Error("NO_TEXT");
-     }
-     
-     const truncatedText = text.substring(0, 50000);
-     result = await model.generateContent([
-       `${prompt}\n\nNội dung văn bản trích xuất:\n"""\n${truncatedText}\n"""`
-     ]);
+         
+         if (!text || text.trim().length < 10) {
+           throw new Error("NO_TEXT");
+         }
+         
+         const truncatedText = text.substring(0, 50000);
+         result = await model.generateContent([
+           `${prompt}\n\nNội dung văn bản trích xuất:\n"""\n${truncatedText}\n"""`
+         ]);
+      }
+
+      const response = await result.response;
+      let description = response.text().trim();
+      description = description.replace(/\*\*/g, "").replace(/#/g, "");
+      return description; // Success! Return immediately.
+    } catch (err: any) {
+      lastError = err;
+      // If it's a 404 (model not found), continue to the next model
+      if (err.message && err.message.includes("404")) {
+        continue;
+      }
+      // If NO_TEXT, it's not a model issue, so break and throw it
+      if (err.message === "NO_TEXT" || err.message.includes("Lỗi khi đọc nội dung file")) {
+        throw err; 
+      }
+      // If it's some other API error (e.g. invalid key), continue or throw?
+      // For safety, we will try the next model just in case it's a multimodal capability issue
+    }
   }
 
-  const response = await result.response;
-  let description = response.text().trim();
-  description = description.replace(/\*\*/g, "").replace(/#/g, "");
-  return description;
+  // If all models fail, throw the last error
+  throw new Error("Tất cả phiên bản AI đều báo lỗi: " + lastError?.message);
 }
