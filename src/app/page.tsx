@@ -69,35 +69,35 @@ export default async function HomePage() {
         {/* Grid overlay */}
         <div className="absolute inset-0 bg-grid opacity-50 pointer-events-none" />
 
-        <div className="relative px-5 py-5 sm:px-6 sm:py-5 flex flex-col md:flex-row items-center md:items-end justify-between gap-5">
+        <div className="relative px-5 py-6 sm:px-8 sm:py-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 lg:gap-10">
           {/* Headline & Info */}
-          <div className="flex-1 w-full text-center md:text-left">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-3 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-[11px] font-bold uppercase tracking-widest">
+          <div className="flex-1 w-full text-left">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full bg-slate-100/80 border border-slate-200/80 text-slate-600 text-[11px] font-bold uppercase tracking-widest backdrop-blur-md">
               <Shield className="w-3.5 h-3.5 text-[#1D78B8]" />
               Trung tâm Kiểm soát Bệnh tật TP. Đà Nẵng
             </div>
             
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight leading-tight mb-2">
-              Ngân hàng Tài liệu <span className="text-[#1D78B8]">Truyền thông</span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-800 tracking-tight leading-[1.15] mb-3">
+              Ngân hàng Tài liệu <br className="hidden sm:block" /><span className="text-[#1D78B8] inline-block mt-1">Truyền thông</span>
             </h1>
-            <p className="text-slate-500 text-sm max-w-xl mx-auto md:mx-0 leading-relaxed">
+            <p className="text-slate-500 text-sm sm:text-base max-w-xl leading-relaxed">
               Kho lưu trữ tập trung tài liệu truyền thông, hình ảnh, video và ấn phẩm phòng chống dịch bệnh của CDC Đà Nẵng.
             </p>
           </div>
 
           {/* Stats grid */}
-          <div className="flex flex-wrap justify-center md:justify-end gap-2 shrink-0">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-end gap-3 shrink-0 w-full lg:w-auto mt-2 lg:mt-0">
             {stats.map((s) => (
               <div
                 key={s.label}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-xl ${s.bg} border ${s.border} backdrop-blur-sm cursor-default hover:scale-105 transition-transform duration-200`}
+                className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 px-4 py-3 rounded-2xl ${s.bg} border ${s.border} backdrop-blur-sm shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 w-full sm:w-auto`}
               >
-                <div className={`p-1.5 rounded-lg ${s.bg}`}>
-                  <s.icon className={`w-3.5 h-3.5 ${s.color}`} />
+                <div className={`p-2.5 rounded-xl bg-white shadow-sm shrink-0`}>
+                  <s.icon className={`w-4 h-4 ${s.color}`} />
                 </div>
-                <div className="text-left">
-                  <p className={`text-sm font-extrabold ${s.color} leading-none tabular-nums`}>{s.value}</p>
-                  <p className="text-[10px] text-slate-500 leading-none mt-1 font-medium">{s.label}</p>
+                <div className="text-left flex-1 mt-1 sm:mt-0">
+                  <p className={`text-lg sm:text-base font-black ${s.color} leading-none tabular-nums`}>{s.value}</p>
+                  <p className="text-[10px] text-slate-500 leading-none mt-1.5 font-bold uppercase tracking-wider">{s.label}</p>
                 </div>
               </div>
             ))}

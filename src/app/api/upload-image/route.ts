@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   let finalBuffer = buffer;
   try {
     finalBuffer = await sharp(buffer)
-      .webp({ quality: 80 })
+      .webp({ lossless: true })
       .toBuffer();
   } catch (err) {
     console.error("Lỗi nén ảnh:", err);

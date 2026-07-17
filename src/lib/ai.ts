@@ -33,38 +33,69 @@ export async function extractTextFromFile(buffer: Buffer, filename: string): Pro
   }
 }
 
+function getMimeType(filename: string): string {
+  const ext = filename.split('.').pop()?.toLowerCase() || '';
+  const mimes: Record<string, string> = {
+    'png': 'image/png',
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'webp': 'image/webp',
+    'heic': 'image/heic',
+    'heif': 'image/heif',
+    'pdf': 'application/pdf',
+    'txt': 'text/plain',
+    'mp4': 'video/mp4',
+    'mpeg': 'video/mpeg',
+    'mov': 'video/mov',
+    'avi': 'video/avi',
+    'webm': 'video/webm',
+    'mp3': 'audio/mp3',
+    'wav': 'audio/wav',
+    'ogg': 'audio/ogg',
+    'flac': 'audio/flac'
+  };
+  return mimes[ext] || 'application/octet-stream';
+}
+
 export async function generateFileDescription(buffer: Buffer, filename: string, apiKey: string): Promise<string | null> {
   try {
-    const text = await extractTextFromFile(buffer, filename);
-    if (!text || text.trim().length < 20) {
-      // Return null if text is too short or empty
-      return null;
-    }
-
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    
+    const mimeType = getMimeType(filename);
+    const isNativeSupported = ['image/', 'application/pdf', 'video/', 'audio/', 'text/plain'].some(prefix => mimeType.startsWith(prefix));
+    
+    const prompt = `Bạn là một trợ lý ảo thông minh. 
+Nhiệm vụ: Phân tích tài liệu / tệp đính kèm có tên "${filename}" và viết một đoạn mô tả (description) ngắn gọn, súc tích và chuyên nghiệp (khoảng 2-4 câu) để tóm tắt nội dung chính.
+LƯU Ý QUAN TRỌNG:
+- Chỉ trả về duy nhất đoạn văn bản mô tả, không thêm bình luận, không dùng markdown in đậm/nghiêng.`;
 
-    // Limit text to avoid exceeding token limit (Gemini 1.5 flash has 1M context, but let's be safe and send max 50,000 characters)
-    const truncatedText = text.substring(0, 50000);
+    let result;
+    // Sử dụng inlineData cho các file được Gemini hỗ trợ trực tiếp (dung lượng < 19MB)
+    if (isNativeSupported && buffer.length < 19 * 1024 * 1024) {
+       result = await model.generateContent([
+         prompt,
+         {
+           inlineData: {
+             data: buffer.toString("base64"),
+             mimeType
+           }
+         }
+       ]);
+    } else {
+       // Fallback: trích xuất text cho file Word, Excel, PowerPoint hoặc file quá lớn
+       const text = await extractTextFromFile(buffer, filename);
+       if (!text || text.trim().length < 10) return null;
+       const truncatedText = text.substring(0, 50000);
+       result = await model.generateContent([
+         `${prompt}\n\nNội dung văn bản trích xuất:\n"""\n${truncatedText}\n"""`
+       ]);
+    }
 
-    const prompt = `
-Bạn là một trợ lý ảo thông minh. Dưới đây là nội dung văn bản được trích xuất từ tài liệu "${filename}".
-Hãy đọc nội dung này và viết một đoạn mô tả (description) ngắn gọn, súc tích và chuyên nghiệp (khoảng 2-4 câu) để tóm tắt nội dung chính của tài liệu này. 
-LƯU Ý QUAN TRỌNG: 
-- Chỉ trả về duy nhất đoạn văn bản mô tả, không thêm bất kỳ bình luận, tiêu đề hay lời chào hỏi nào khác.
-- Không dùng markdown in đậm in nghiêng, chỉ dùng plain text.
-
-Nội dung tài liệu:
-"""
-${truncatedText}
-"""
-    `;
-
-    const result = await model.generateContent(prompt);
     const response = await result.response;
     let description = response.text().trim();
     
-    // Remove markdown formatting if the model still adds it
+    // Loại bỏ markdown dư thừa
     description = description.replace(/\*\*/g, "").replace(/#/g, "");
     
     return description;
