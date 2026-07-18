@@ -61,10 +61,6 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         </Link>
       </div>
 
-      <div className="hidden sm:block sticky top-20 z-40 mb-6 rounded-2xl overflow-hidden shadow-sm bg-white">
-        <BannerStrip position="MIDDLE" />
-      </div>
-
       <div className="flex gap-4 xl:gap-6">
         <div className="flex-1 min-w-0">
           <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-12">
